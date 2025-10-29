@@ -1,6 +1,10 @@
 import { Heart, Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 
-export function Footer() {
+interface FooterProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function Footer({ onNavigate }: FooterProps = {}) {
   return (
     <footer className="bg-black border-t border-white/10 mt-20">
       <div className="container mx-auto px-4 py-12">
@@ -39,7 +43,14 @@ export function Footer() {
               <FooterLink>Help Center</FooterLink>
               <FooterLink>Contact Us</FooterLink>
               <FooterLink>Trust & Safety</FooterLink>
-              <FooterLink>FAQs</FooterLink>
+              <li>
+                <button 
+                  onClick={() => onNavigate?.("faq")}
+                  className="text-[#B0B0B0] hover:text-[#00BFFF] transition-colors inline-block"
+                >
+                  FAQs
+                </button>
+              </li>
             </ul>
           </div>
 

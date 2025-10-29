@@ -54,24 +54,21 @@ export function Hero({ onNavigate }: HeroProps) {
             Together we can build a better future for schools, children, and health.
           </p>
           
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <div 
             className={`flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 transition-all duration-1000 delay-600 ${
               showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
             <button 
-              onClick={() => onNavigate("explore")}
-              className="px-8 py-4 text-lg rounded-lg btn-gradient text-white flex items-center gap-2 group"
-            >
-              Explore Campaigns
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </button>
-            <button 
               onClick={() => onNavigate("start-donating")}
-              className="px-8 py-4 text-lg rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300"
+              className="px-10 py-5 text-xl rounded-lg btn-gradient text-white flex items-center gap-2 group shadow-2xl"
+              style={{
+                boxShadow: "0 10px 40px rgba(0, 191, 255, 0.3), 0 5px 20px rgba(157, 78, 221, 0.3)"
+              }}
             >
               Start Donating
+              <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
 

@@ -1,4 +1,5 @@
 import { Hero } from "../components/Hero";
+import { ArrowRight } from "lucide-react";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -9,6 +10,7 @@ export function Home({ onNavigate }: HomeProps) {
     <div className="page-transition">
       <Hero onNavigate={onNavigate} />
       
+      {/* Action Buttons Section */}
       <section className="py-20 bg-black relative overflow-hidden">
         {/* Background Glow */}
         <div className="absolute inset-0 overflow-hidden">
@@ -22,16 +24,20 @@ export function Home({ onNavigate }: HomeProps) {
               Every contribution, no matter the size, helps create positive change in our world.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <button 
                 onClick={() => onNavigate("start-donating")}
-                className="px-8 py-4 text-lg rounded-lg btn-gradient text-white"
+                className="px-10 py-5 text-xl rounded-lg btn-gradient text-white flex items-center gap-2 justify-center group"
+                style={{
+                  boxShadow: "0 10px 40px rgba(0, 191, 255, 0.3), 0 5px 20px rgba(157, 78, 221, 0.3)"
+                }}
               >
-                Start Donating Today
+                Start Donating
+                <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
               </button>
               <button 
                 onClick={() => onNavigate("create-campaign")}
-                className="px-8 py-4 text-lg rounded-lg border border-[#9D4EDD]/30 text-[#9D4EDD] hover:bg-[#9D4EDD]/10 transition-all duration-300"
+                className="px-10 py-5 text-xl rounded-lg border-2 border-[#9D4EDD]/50 text-[#9D4EDD] hover:bg-[#9D4EDD]/10 transition-all duration-300 hover:border-[#9D4EDD] hover:glow-purple"
               >
                 Create Your Campaign
               </button>

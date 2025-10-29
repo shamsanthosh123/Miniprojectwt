@@ -4,10 +4,11 @@ import { useState } from "react";
 
 interface HeaderProps {
   onSignInClick: () => void;
+  onSignUpClick: () => void;
   onNavigate: (page: string) => void;
 }
 
-export function Header({ onSignInClick, onNavigate }: HeaderProps) {
+export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -36,13 +37,13 @@ export function Header({ onSignInClick, onNavigate }: HeaderProps) {
             onClick={onSignInClick}
             className="px-6 py-2.5 rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300 hover:glow-blue"
           >
-            Sign In
+            Login
           </button>
           <button
-            onClick={() => onNavigate("create-campaign")}
+            onClick={onSignUpClick}
             className="px-6 py-2.5 rounded-lg btn-gradient text-white"
           >
-            Start Campaign
+            Sign Up
           </button>
         </div>
 
@@ -72,13 +73,13 @@ export function Header({ onSignInClick, onNavigate }: HeaderProps) {
               onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
               className="px-6 py-2.5 rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300"
             >
-              Sign In
+              Login
             </button>
             <button
-              onClick={() => { onNavigate("create-campaign"); setMobileMenuOpen(false); }}
+              onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
               className="px-6 py-2.5 rounded-lg btn-gradient text-white"
             >
-              Start Campaign
+              Sign Up
             </button>
           </nav>
         </div>

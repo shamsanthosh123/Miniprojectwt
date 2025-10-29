@@ -8,9 +8,10 @@ import { ExploreCampaigns } from "./pages/ExploreCampaigns";
 import { HowItWorks } from "./pages/HowItWorks";
 import { StartDonating } from "./pages/StartDonating";
 import { CreateCampaign } from "./pages/CreateCampaign";
+import { FAQPage } from "./pages/FAQPage";
 import { ArrowLeft } from "lucide-react";
 
-type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign";
+type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("home");
@@ -41,13 +42,15 @@ export default function App() {
       case "home":
         return <Home onNavigate={handleNavigate} />;
       case "explore":
-        return <ExploreCampaigns />;
+        return <ExploreCampaigns onNavigate={handleNavigate} />;
       case "how-it-works":
-        return <HowItWorks />;
+        return <HowItWorks onNavigate={handleNavigate} />;
       case "start-donating":
-        return <StartDonating />;
+        return <StartDonating onNavigate={handleNavigate} />;
       case "create-campaign":
-        return <CreateCampaign />;
+        return <CreateCampaign onNavigate={handleNavigate} />;
+      case "faq":
+        return <FAQPage />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }
@@ -56,7 +59,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-black">
       <Header 
-        onSignInClick={() => setShowSignIn(true)} 
+        onSignInClick={() => setShowSignIn(true)}
+        onSignUpClick={() => setShowSignUp(true)}
         onNavigate={handleNavigate}
       />
       
@@ -74,7 +78,7 @@ export default function App() {
       
       {renderPage()}
 
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
 
       <SignInModal
         isOpen={showSignIn}

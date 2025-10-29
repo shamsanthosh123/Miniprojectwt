@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CampaignCard } from "../components/CampaignCard";
 import { DonationModal } from "../components/DonationModal";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, GraduationCap, HeartPulse, CloudRain, Footprints, Users, Leaf, Home, Utensils, HelpingHand, Brain } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -15,9 +15,15 @@ interface Campaign {
   daysLeft: number;
 }
 
-export function ExploreCampaigns() {
+interface ExploreCampaignsProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
   const [selectedCampaign, setSelectedCampaign] = useState<{ id: string; title: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [revealedCards, setRevealedCards] = useState<boolean[]>(new Array(10).fill(false));
+  const categoryRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const campaigns: Campaign[] = [
     {
@@ -102,6 +108,49 @@ export function ExploreCampaigns() {
 
   const categories = ["all", "Schools", "Children", "Health Funds"];
 
+  const donationCategories = [
+    { name: "Education for Children", icon: GraduationCap, color: "#00BFFF" },
+    { name: "Health & Medical Aid", icon: HeartPulse, color: "#9D4EDD" },
+    { name: "Disaster Relief", icon: CloudRain, color: "#FF5555" },
+    { name: "Animal Welfare", icon: Footprints, color: "#00FF9D" },
+    { name: "Women Empowerment", icon: Users, color: "#FF69B4" },
+    { name: "Environmental Causes", icon: Leaf, color: "#00FF9D" },
+    { name: "Old Age Support", icon: HelpingHand, color: "#9D4EDD" },
+    { name: "Food & Hunger Programs", icon: Utensils, color: "#FFB84D" },
+    { name: "Shelter for Homeless", icon: Home, color: "#00BFFF" },
+    { name: "Mental Health & Wellbeing", icon: Brain, color: "#9D4EDD" },
+  ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = categoryRefs.current.indexOf(entry.target as HTMLDivElement);
+            if (index !== -1) {
+              setRevealedCards((prev) => {
+                const newRevealed = [...prev];
+                newRevealed[index] = true;
+                return newRevealed;
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    categoryRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      categoryRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, []);
+
   return (
     <div className="page-transition min-h-screen bg-black pt-24 pb-20">
       {/* Background Glow */}
@@ -117,6 +166,53 @@ export function ExploreCampaigns() {
             <p className="text-xl text-[#B0B0B0] max-w-2xl mx-auto">
               Browse active campaigns and make a difference in the lives of people who need it most.
             </p>
+          </div>
+
+          {/* Emotional Donation Explanation */}
+          <div className="max-w-4xl mx-auto mb-16 glass neon-border rounded-3xl p-10 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00BFFF]/5 to-[#9D4EDD]/5"></div>
+            <div className="relative z-10">
+              <p className="text-2xl text-white mb-4 leading-relaxed">
+                "Every donation, no matter how small, changes someone's story."
+              </p>
+              <p className="text-lg text-[#B0B0B0] leading-relaxed">
+                Your kindness builds schools, feeds children, and brings hope to families in need.
+                Join hands with millions who are making the world brighter — one donation at a time.
+              </p>
+            </div>
+          </div>
+
+          {/* Donation Categories */}
+          <div className="mb-16">
+            <h2 className="text-4xl text-white text-center mb-10">Choose Your Cause</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              {donationCategories.map((category, index) => {
+                const Icon = category.icon;
+                return (
+                  <div
+                    key={index}
+                    ref={(el) => (categoryRefs.current[index] = el)}
+                    className={`glass neon-border rounded-2xl p-6 text-center cursor-pointer card-hover transition-all duration-700 ${
+                      revealedCards[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                    }`}
+                    style={{
+                      transitionDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    <div
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                      style={{
+                        background: `linear-gradient(135deg, ${category.color}20, ${category.color}05)`,
+                        boxShadow: `0 0 20px ${category.color}40`,
+                      }}
+                    >
+                      <Icon className="w-8 h-8" style={{ color: category.color }} />
+                    </div>
+                    <h3 className="text-white text-sm">{category.name}</h3>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Search and Filter */}

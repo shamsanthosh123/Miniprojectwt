@@ -1,17 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Upload, FileText, Target, Calendar, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Upload, FileText, Target, Calendar, Image as ImageIcon, Sparkles, TrendingUp } from "lucide-react";
+import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
-export function CreateCampaign() {
+interface CreateCampaignProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [goal, setGoal] = useState("");
   const [duration, setDuration] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [revealedStories, setRevealedStories] = useState<boolean[]>(new Array(3).fill(false));
+  const storyRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const successStories = [
+    {
+      title: "Clean Water for Kenya",
+      description: "Provided clean drinking water to 10,000+ families",
+      image: "https://images.unsplash.com/photo-1712471010531-bad62e5b357b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjbGVhbiUyMHdhdGVyJTIwd2VsbHxlbnwxfHx8fDE3NjE2OTIxMzN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      raised: "₹2.5 Cr",
+    },
+    {
+      title: "Books for Every Child",
+      description: "Distributed 50,000 books across rural schools",
+      image: "https://images.unsplash.com/photo-1727473704473-e4fe94b45b96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGFyaXR5JTIwZWR1Y2F0aW9uJTIwY2hpbGRyZW58ZW58MXx8fHwxNzYxNjgzNjQyfDA&ixlib=rb-4.1.0&q=80&w=400",
+      raised: "₹1.8 Cr",
+    },
+    {
+      title: "Hospital Fund for Rural India",
+      description: "Built 5 new healthcare centers in remote areas",
+      image: "https://images.unsplash.com/photo-1512069511692-b82d787265cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwaGVhbHRoY2FyZXxlbnwxfHx8fDE3NjE3MjU2NTB8MA&ixlib=rb-4.1.0&q=80&w=400",
+      raised: "₹3.2 Cr",
+    },
+  ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = storyRefs.current.indexOf(entry.target as HTMLDivElement);
+            if (index !== -1) {
+              setRevealedStories((prev) => {
+                const newRevealed = [...prev];
+                newRevealed[index] = true;
+                return newRevealed;
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    storyRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      storyRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,6 +265,57 @@ export function CreateCampaign() {
                 </div>
                 <h3 className="mb-2 text-white">Easy Updates</h3>
                 <p className="text-sm text-[#B0B0B0]">Update your supporters with progress reports anytime</p>
+              </div>
+            </div>
+
+            {/* Global Success Stories */}
+            <div className="mt-20">
+              <div className="flex items-center gap-4 mb-10 justify-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center glow-green"
+                     style={{ background: 'linear-gradient(135deg, #00FF9D20, #00FF9D05)' }}>
+                  <TrendingUp className="w-7 h-7 text-[#00FF9D]" />
+                </div>
+                <h2 className="text-4xl text-white">Global Success Stories</h2>
+              </div>
+              <p className="text-center text-[#B0B0B0] mb-12 max-w-2xl mx-auto">
+                Be inspired by campaigns that have changed lives and communities around the world
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {successStories.map((story, index) => (
+                  <div
+                    key={index}
+                    ref={(el) => (storyRefs.current[index] = el)}
+                    className={`glass neon-border rounded-2xl overflow-hidden card-hover transition-all duration-700 ${
+                      revealedStories[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                    }`}
+                    style={{
+                      transitionDelay: `${index * 150}ms`,
+                    }}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <ImageWithFallback
+                        src={story.image}
+                        alt={story.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/30 mb-2">
+                          <TrendingUp className="w-3 h-3" />
+                          <span>Success</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-white mb-2">{story.title}</h3>
+                      <p className="text-sm text-[#B0B0B0] mb-4">{story.description}</p>
+                      <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                        <span className="text-sm text-[#B0B0B0]">Total Raised</span>
+                        <span className="gradient-text">{story.raised}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

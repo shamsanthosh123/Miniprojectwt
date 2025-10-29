@@ -1,7 +1,11 @@
 import { Search, Heart, TrendingUp, Shield, Users, CheckCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export function HowItWorks() {
+interface HowItWorksProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function HowItWorks({ onNavigate }: HowItWorksProps = {}) {
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
   const stepsRef = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -146,7 +150,10 @@ export function HowItWorks() {
               <p className="text-xl text-[#B0B0B0] mb-8">
                 Join thousands of donors who are already making a difference
               </p>
-              <button className="px-10 py-4 text-lg rounded-lg btn-gradient text-white">
+              <button 
+                onClick={() => onNavigate?.("start-donating")}
+                className="px-10 py-4 text-lg rounded-lg btn-gradient text-white"
+              >
                 Start Donating Now
               </button>
             </div>

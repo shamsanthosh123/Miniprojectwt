@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CampaignCard } from "../components/CampaignCard";
 import { DonationModal } from "../components/DonationModal";
-import { Heart, Zap, TrendingUp } from "lucide-react";
+import { Heart, Zap, TrendingUp, ArrowRight } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -15,7 +15,11 @@ interface Campaign {
   daysLeft: number;
 }
 
-export function StartDonating() {
+interface StartDonatingProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function StartDonating({ onNavigate }: StartDonatingProps = {}) {
   const [selectedCampaign, setSelectedCampaign] = useState<{ id: string; title: string } | null>(null);
 
   const featuredCampaigns: Campaign[] = [
@@ -187,10 +191,17 @@ export function StartDonating() {
                 Browse all campaigns or start your own to raise funds for your cause
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="px-8 py-4 text-lg rounded-lg btn-gradient text-white">
+                <button 
+                  onClick={() => onNavigate?.("explore")}
+                  className="px-8 py-4 text-lg rounded-lg btn-gradient text-white flex items-center gap-2 justify-center group"
+                >
                   Browse All Campaigns
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </button>
-                <button className="px-8 py-4 text-lg rounded-lg border border-[#9D4EDD]/30 text-[#9D4EDD] hover:bg-[#9D4EDD]/10 transition-all duration-300">
+                <button 
+                  onClick={() => onNavigate?.("create-campaign")}
+                  className="px-8 py-4 text-lg rounded-lg border border-[#9D4EDD]/30 text-[#9D4EDD] hover:bg-[#9D4EDD]/10 transition-all duration-300 flex items-center gap-2 justify-center"
+                >
                   Start Your Campaign
                 </button>
               </div>
