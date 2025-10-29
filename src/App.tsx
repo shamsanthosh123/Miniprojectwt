@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { SignInModal } from "./components/SignInModal";
@@ -8,17 +8,32 @@ import { ExploreCampaigns } from "./pages/ExploreCampaigns";
 import { HowItWorks } from "./pages/HowItWorks";
 import { StartDonating } from "./pages/StartDonating";
 import { CreateCampaign } from "./pages/CreateCampaign";
+import { ArrowLeft } from "lucide-react";
 
 type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("home");
+  const [pageHistory, setPageHistory] = useState<PageType[]>(["home"]);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
 
   const handleNavigate = (page: string) => {
-    setCurrentPage(page as PageType);
+    const newPage = page as PageType;
+    setPageHistory(prev => [...prev, newPage]);
+    setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBack = () => {
+    if (pageHistory.length > 1) {
+      const newHistory = [...pageHistory];
+      newHistory.pop(); // Remove current page
+      const previousPage = newHistory[newHistory.length - 1];
+      setPageHistory(newHistory);
+      setCurrentPage(previousPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const renderPage = () => {
@@ -39,11 +54,23 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50/30 via-teal-50/30 to-cyan-50/30">
+    <div className="min-h-screen bg-black">
       <Header 
         onSignInClick={() => setShowSignIn(true)} 
         onNavigate={handleNavigate}
       />
+      
+      {/* Back Button */}
+      {pageHistory.length > 1 && (
+        <button
+          onClick={handleBack}
+          className="fixed left-6 top-24 z-40 flex items-center gap-2 px-4 py-2 glass rounded-full text-sm hover:bg-white/10 transition-all duration-300 group"
+          style={{ animation: "fadeSlideIn 0.6s ease-out" }}
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back</span>
+        </button>
+      )}
       
       {renderPage()}
 

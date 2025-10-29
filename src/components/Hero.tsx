@@ -1,63 +1,125 @@
-import { Button } from "./ui/button";
 import { ArrowRight, Users, Target, Heart } from "lucide-react";
+import { Counter } from "./Counter";
+import { useEffect, useState } from "react";
 
 interface HeroProps {
   onNavigate: (page: string) => void;
 }
 
 export function Hero({ onNavigate }: HeroProps) {
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    setShowContent(true);
+  }, []);
+
   return (
-    <section className="bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 py-20">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full mb-6 shadow-sm">
-            <span className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></span>
-            <span className="text-sm text-gray-600">Join 50,000+ donors making a difference</span>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black pt-20">
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00BFFF]/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#9D4EDD]/20 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00FF9D]/10 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-5xl mx-auto text-center">
+          {/* Badge */}
+          <div 
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-8 transition-all duration-800 ${
+              showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
+            <span className="w-2 h-2 bg-[#00FF9D] rounded-full animate-pulse"></span>
+            <span className="text-sm text-[#B0B0B0]">Join 50,000+ donors making a difference</span>
           </div>
           
-          <h1 className="text-5xl md:text-6xl mb-6 bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
-            Every Donation Creates Hope
+          {/* Main Heading */}
+          <h1 
+            className={`text-6xl md:text-7xl lg:text-8xl mb-6 transition-all duration-1000 delay-200 ${
+              showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+            style={{ lineHeight: "1.1" }}
+          >
+            <span className="block mb-3">Make a Change.</span>
+            <span className="block gradient-text">Start Donating Today.</span>
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Support meaningful causes and make a real impact. Join our community of changemakers and help build a better tomorrow.
+          {/* Subheading */}
+          <p 
+            className={`text-xl md:text-2xl text-[#B0B0B0] mb-12 max-w-3xl mx-auto transition-all duration-1000 delay-400 ${
+              showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
+            Together we can build a better future for schools, children, and health.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Button size="lg" className="text-lg px-8" onClick={() => onNavigate("explore")}>
+          {/* CTA Buttons */}
+          <div 
+            className={`flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 transition-all duration-1000 delay-600 ${
+              showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
+            <button 
+              onClick={() => onNavigate("explore")}
+              className="px-8 py-4 text-lg rounded-lg btn-gradient text-white flex items-center gap-2 group"
+            >
               Explore Campaigns
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8" onClick={() => onNavigate("how-it-works")}>
-              How It Works
-            </Button>
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
+            <button 
+              onClick={() => onNavigate("start-donating")}
+              className="px-8 py-4 text-lg rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300"
+            >
+              Start Donating
+            </button>
           </div>
 
+          {/* Stats Counter */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-teal-600" />
+            <div 
+              className={`glass neon-border rounded-2xl p-8 card-hover transition-all duration-1000 delay-800 ${
+                showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#00BFFF]/20 to-[#00BFFF]/5 rounded-xl flex items-center justify-center mx-auto mb-4 glow-blue">
+                <Users className="w-8 h-8 text-[#00BFFF]" />
               </div>
-              <div className="text-3xl mb-2">50K+</div>
-              <div className="text-gray-600">Active Donors</div>
+              <Counter end={50} suffix="K+" />
+              <div className="text-[#B0B0B0] mt-2">Active Donors</div>
             </div>
             
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Target className="w-6 h-6 text-cyan-600" />
+            <div 
+              className={`glass neon-border rounded-2xl p-8 card-hover transition-all duration-1000 delay-1000 ${
+                showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#9D4EDD]/20 to-[#9D4EDD]/5 rounded-xl flex items-center justify-center mx-auto mb-4 glow-purple">
+                <Target className="w-8 h-8 text-[#9D4EDD]" />
               </div>
-              <div className="text-3xl mb-2">₹10Cr</div>
-              <div className="text-gray-600">Funds Raised</div>
+              <Counter end={10} suffix=" Crore" prefix="₹" />
+              <div className="text-[#B0B0B0] mt-2">Funds Raised</div>
             </div>
             
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-6 h-6 text-emerald-600" />
+            <div 
+              className={`glass neon-border rounded-2xl p-8 card-hover transition-all duration-1000 delay-1200 ${
+                showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#00FF9D]/20 to-[#00FF9D]/5 rounded-xl flex items-center justify-center mx-auto mb-4 glow-green">
+                <Heart className="w-8 h-8 text-[#00FF9D]" />
               </div>
-              <div className="text-3xl mb-2">500+</div>
-              <div className="text-gray-600">Active Campaigns</div>
+              <Counter end={500} suffix="+" />
+              <div className="text-[#B0B0B0] mt-2">Active Campaigns</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-white/20 rounded-full flex items-start justify-center p-2">
+          <div className="w-1.5 h-3 bg-gradient-to-b from-[#00BFFF] to-transparent rounded-full"></div>
         </div>
       </div>
     </section>

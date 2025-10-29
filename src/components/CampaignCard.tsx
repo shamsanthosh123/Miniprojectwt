@@ -1,9 +1,6 @@
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
-import { Badge } from "./ui/badge";
 import { Calendar, Users } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useState, useEffect } from "react";
 
 interface CampaignCardProps {
   id: string;
@@ -30,58 +27,79 @@ export function CampaignCard({
   daysLeft,
   onDonate,
 }: CampaignCardProps) {
+  const [isVisible, setIsVisible] = useState(false);
   const percentage = Math.round((raised / goal) * 100);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative h-48 overflow-hidden">
+    <div 
+      className={`glass neon-border rounded-2xl overflow-hidden card-hover transition-all duration-800 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      }`}
+    >
+      <div className="relative h-56 overflow-hidden group">
         <ImageWithFallback
           src={image}
           alt={title}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <Badge className="absolute top-3 left-3">
-          {category}
-        </Badge>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+        <div className="absolute top-4 left-4">
+          <span className="px-3 py-1 rounded-full text-xs glass border border-[#00BFFF]/30 text-[#00BFFF]">
+            {category}
+          </span>
+        </div>
       </div>
       
       <div className="p-6">
-        <h3 className="text-xl mb-2">{title}</h3>
-        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
+        <h3 className="text-xl mb-2 text-white">{title}</h3>
+        <p className="text-[#B0B0B0] mb-4 line-clamp-2 text-sm">{description}</p>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-600">Raised: ₹{raised.toLocaleString()}</span>
-              <span>{percentage}%</span>
+            <div className="flex justify-between mb-2 text-sm">
+              <span className="text-[#B0B0B0]">Raised: ₹{raised.toLocaleString()}</span>
+              <span className="text-[#00FF9D]">{percentage}%</span>
             </div>
-            <Progress value={percentage} className="h-2" />
-            <div className="text-gray-500 mt-1">
+            
+            {/* Progress Bar */}
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full progress-glow rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${percentage}%` }}
+              ></div>
+            </div>
+            
+            <div className="text-[#B0B0B0] text-sm mt-1">
               Goal: ₹{goal.toLocaleString()}
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t">
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            <div className="flex items-center gap-4 text-sm text-[#B0B0B0]">
               <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{donors} donors</span>
+                <Users className="w-4 h-4 text-[#00BFFF]" />
+                <span>{donors.toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{daysLeft} days left</span>
+                <Calendar className="w-4 h-4 text-[#9D4EDD]" />
+                <span>{daysLeft}d left</span>
               </div>
             </div>
           </div>
 
-          <Button 
-            className="w-full" 
+          <button 
+            className="w-full py-3 rounded-lg btn-gradient text-white mt-2"
             onClick={() => onDonate(id)}
           >
             Donate Now
-          </Button>
+          </button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

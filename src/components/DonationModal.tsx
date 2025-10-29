@@ -6,11 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Separator } from "./ui/separator";
 import { Heart } from "lucide-react";
 
 interface DonationModalProps {
@@ -31,7 +29,6 @@ export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps)
 
   const handleDonate = () => {
     setIsProcessing(true);
-    // Simulate processing
     setTimeout(() => {
       setIsProcessing(false);
       alert(`Thank you for donating ₹${amount === "custom" ? customAmount : amount}!`);
@@ -43,30 +40,30 @@ export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md glass neon-border bg-[#0A0A0A]/95 border-[#00BFFF]/30">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" fill="currentColor" />
+          <DialogTitle className="flex items-center gap-2 text-white text-2xl">
+            <Heart className="w-6 h-6 text-[#FF5555]" fill="currentColor" />
             Support This Campaign
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-[#B0B0B0]">
             {campaign.title}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div>
-            <Label className="mb-3 block">Select Amount</Label>
+            <Label className="mb-3 block text-white">Select Amount</Label>
             <RadioGroup value={amount} onValueChange={setAmount}>
               <div className="grid grid-cols-3 gap-2 mb-2">
                 {predefinedAmounts.map((value) => (
                   <Label
                     key={value}
                     htmlFor={value}
-                    className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                    className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
                       amount === value
-                        ? "border-teal-500 bg-teal-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-[#00BFFF] bg-[#00BFFF]/10 glow-blue text-white"
+                        : "border-white/10 hover:border-white/30 text-[#B0B0B0]"
                     }`}
                   >
                     <RadioGroupItem value={value} id={value} className="sr-only" />
@@ -77,10 +74,10 @@ export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps)
               
               <Label
                 htmlFor="custom"
-                className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
                   amount === "custom"
-                    ? "border-teal-500 bg-teal-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-[#00BFFF] bg-[#00BFFF]/10 glow-blue text-white"
+                    : "border-white/10 hover:border-white/30 text-[#B0B0B0]"
                 }`}
               >
                 <RadioGroupItem value="custom" id="custom" />
@@ -91,53 +88,61 @@ export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps)
 
           {amount === "custom" && (
             <div>
-              <Label htmlFor="customAmount">Enter Amount (₹)</Label>
+              <Label htmlFor="customAmount" className="text-white mb-2 block">Enter Amount (₹)</Label>
               <Input
                 id="customAmount"
                 type="number"
                 placeholder="Enter amount"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                className="mt-2"
+                className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
               />
             </div>
           )}
 
-          <Separator />
+          <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
           <div>
-            <Label htmlFor="name">Your Name</Label>
-            <Input id="name" placeholder="John Doe" className="mt-2" />
+            <Label htmlFor="name" className="text-white mb-2 block">Your Name</Label>
+            <Input 
+              id="name" 
+              placeholder="John Doe" 
+              className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow" 
+            />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input id="email" type="email" placeholder="john@example.com" className="mt-2" />
+            <Label htmlFor="email" className="text-white mb-2 block">Email Address</Label>
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="john@example.com" 
+              className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+            />
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="glass rounded-lg p-4 border border-white/10">
             <div className="flex justify-between mb-2">
-              <span>Donation Amount:</span>
-              <span className="font-semibold">
+              <span className="text-[#B0B0B0]">Donation Amount:</span>
+              <span className="font-semibold text-white">
                 ₹{amount === "custom" ? customAmount || "0" : amount}
               </span>
             </div>
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-[#B0B0B0]">
               <span>Processing Fee:</span>
               <span>₹0.00</span>
             </div>
           </div>
 
-          <Button 
-            className="w-full" 
-            size="lg"
+          <button
+            className="w-full py-3 rounded-lg btn-gradient text-white disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleDonate}
             disabled={isProcessing || (amount === "custom" && !customAmount)}
           >
             {isProcessing ? "Processing..." : "Complete Donation"}
-          </Button>
+          </button>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-[#B0B0B0] text-center">
             Your donation is secure and will be processed safely. You'll receive a confirmation email.
           </p>
         </div>
