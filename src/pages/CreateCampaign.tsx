@@ -82,32 +82,32 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
   };
 
   return (
-    <div className="page-transition min-h-screen bg-black pt-24 pb-20">
+    <div className="page-transition min-h-screen pt-24 pb-20" style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)' }}>
       {/* Background Glow */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#00BFFF]/10 rounded-full blur-[150px]"></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#4DD0E1]/10 rounded-full blur-[150px]"></div>
       </div>
 
       <section className="relative z-10">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12 fade-in">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6">
-                <Sparkles className="w-4 h-4 text-[#00FF9D]" />
-                <span className="text-sm text-[#B0B0B0]">Start your journey to make a difference</span>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16 fade-in">
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-[#E0F7FA] mb-8">
+                <Sparkles className="w-5 h-5 text-[#00BCD4]" />
+                <span className="text-base text-gray-700 font-medium">Start your journey to make a difference</span>
               </div>
-              <h1 className="text-6xl mb-4 gradient-text">Create Your Campaign</h1>
-              <p className="text-xl text-[#B0B0B0]">
+              <h1 className="text-6xl mb-6 text-gray-900" style={{ lineHeight: '1.2' }}>Create Your Campaign</h1>
+              <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
                 Fill in the details below to create your campaign and start raising funds.
               </p>
             </div>
 
-            <div className="glass neon-border rounded-3xl p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Campaign Title */}
-                <div>
-                  <Label htmlFor="title" className="flex items-center gap-2 mb-3 text-white">
-                    <FileText className="w-4 h-4 text-[#00BFFF]" />
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="flex items-center gap-2 text-gray-900 text-base font-medium">
+                    <FileText className="w-5 h-5 text-[#00BCD4]" />
                     Campaign Title
                   </Label>
                   <Input
@@ -117,31 +117,31 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+                    className="input-simple h-14 text-base"
                   />
                 </div>
 
                 {/* Category */}
-                <div>
-                  <Label htmlFor="category" className="mb-3 block text-white">
+                <div className="space-y-3">
+                  <Label htmlFor="category" className="text-gray-900 text-base font-medium block">
                     Category
                   </Label>
                   <Select value={category} onValueChange={setCategory} required>
-                    <SelectTrigger id="category" className="bg-white/5 border-white/10 text-white input-glow">
+                    <SelectTrigger id="category" className="input-simple h-14 text-base">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#121212] border-white/10">
-                      <SelectItem value="schools" className="text-white hover:bg-white/10">Schools</SelectItem>
-                      <SelectItem value="children" className="text-white hover:bg-white/10">Children</SelectItem>
-                      <SelectItem value="health" className="text-white hover:bg-white/10">Health Funds</SelectItem>
-                      <SelectItem value="other" className="text-white hover:bg-white/10">Other</SelectItem>
+                    <SelectContent className="bg-white border-gray-200">
+                      <SelectItem value="schools" className="text-gray-900 hover:bg-gray-100">Schools</SelectItem>
+                      <SelectItem value="children" className="text-gray-900 hover:bg-gray-100">Children</SelectItem>
+                      <SelectItem value="health" className="text-gray-900 hover:bg-gray-100">Health Funds</SelectItem>
+                      <SelectItem value="other" className="text-gray-900 hover:bg-gray-100">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Description */}
-                <div>
-                  <Label htmlFor="description" className="mb-3 block text-white">
+                <div className="space-y-3">
+                  <Label htmlFor="description" className="text-gray-900 text-base font-medium block">
                     Campaign Description
                   </Label>
                   <Textarea
@@ -149,16 +149,16 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                     placeholder="Tell your story. Why is this cause important? How will the funds be used?"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={6}
+                    rows={8}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+                    className="input-simple text-base resize-none"
                   />
                 </div>
 
                 {/* Funding Goal */}
-                <div>
-                  <Label htmlFor="goal" className="flex items-center gap-2 mb-3 text-white">
-                    <Target className="w-4 h-4 text-[#9D4EDD]" />
+                <div className="space-y-3">
+                  <Label htmlFor="goal" className="flex items-center gap-2 text-gray-900 text-base font-medium">
+                    <Target className="w-5 h-5 text-[#00BCD4]" />
                     Funding Goal (₹)
                   </Label>
                   <Input
@@ -168,14 +168,14 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                     value={goal}
                     onChange={(e) => setGoal(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+                    className="input-simple h-14 text-base"
                   />
                 </div>
 
                 {/* Campaign Duration */}
-                <div>
-                  <Label htmlFor="duration" className="flex items-center gap-2 mb-3 text-white">
-                    <Calendar className="w-4 h-4 text-[#00FF9D]" />
+                <div className="space-y-3">
+                  <Label htmlFor="duration" className="flex items-center gap-2 text-gray-900 text-base font-medium">
+                    <Calendar className="w-5 h-5 text-[#00BCD4]" />
                     Campaign Duration (days)
                   </Label>
                   <Input
@@ -185,44 +185,44 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+                    className="input-simple h-14 text-base"
                   />
                 </div>
 
                 {/* Image Upload */}
-                <div>
-                  <Label className="flex items-center gap-2 mb-3 text-white">
-                    <ImageIcon className="w-4 h-4 text-[#00BFFF]" />
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-gray-900 text-base font-medium">
+                    <ImageIcon className="w-5 h-5 text-[#00BCD4]" />
                     Campaign Image
                   </Label>
-                  <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-[#00BFFF]/50 transition-all duration-300 cursor-pointer group">
-                    <Upload className="w-12 h-12 text-[#B0B0B0] mx-auto mb-4 group-hover:text-[#00BFFF] transition-colors" />
-                    <p className="text-[#B0B0B0] mb-2 group-hover:text-white transition-colors">Click to upload or drag and drop</p>
-                    <p className="text-sm text-[#B0B0B0]/70">PNG, JPG up to 10MB</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center hover:border-[#00BCD4] transition-all duration-300 cursor-pointer group bg-gray-50 hover:bg-white">
+                    <Upload className="w-14 h-14 text-gray-400 mx-auto mb-4 group-hover:text-[#00BCD4] transition-colors" />
+                    <p className="text-gray-600 mb-2 group-hover:text-gray-900 transition-colors font-medium">Click to upload or drag and drop</p>
+                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
                   </div>
                 </div>
 
                 {/* Supporting Documents */}
-                <div>
-                  <Label className="mb-3 block text-white">
+                <div className="space-y-3">
+                  <Label className="text-gray-900 text-base font-medium block">
                     Supporting Documents (Optional)
                   </Label>
-                  <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-[#9D4EDD]/50 transition-all duration-300 cursor-pointer group">
-                    <FileText className="w-10 h-10 text-[#B0B0B0] mx-auto mb-3 group-hover:text-[#9D4EDD] transition-colors" />
-                    <p className="text-[#B0B0B0] text-sm mb-1 group-hover:text-white transition-colors">Upload supporting documents</p>
-                    <p className="text-xs text-[#B0B0B0]/70">PDFs, reports, certificates</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#00BCD4] transition-all duration-300 cursor-pointer group bg-gray-50 hover:bg-white">
+                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3 group-hover:text-[#00BCD4] transition-colors" />
+                    <p className="text-gray-600 mb-1 group-hover:text-gray-900 transition-colors font-medium">Upload supporting documents</p>
+                    <p className="text-sm text-gray-500">PDFs, reports, certificates</p>
                   </div>
                 </div>
 
                 {/* Terms */}
-                <div className="glass rounded-xl p-4 border border-white/10">
-                  <p className="text-sm text-[#B0B0B0]">
+                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                  <p className="text-base text-gray-700 leading-relaxed">
                     By creating this campaign, you agree to our{" "}
-                    <a href="#" className="text-[#00BFFF] hover:text-[#00BFFF]/80 transition-colors">
+                    <a href="#" className="text-[#00BCD4] hover:text-[#00838F] transition-colors font-semibold">
                       Terms of Service
                     </a>{" "}
                     and{" "}
-                    <a href="#" className="text-[#00BFFF] hover:text-[#00BFFF]/80 transition-colors">
+                    <a href="#" className="text-[#00BCD4] hover:text-[#00838F] transition-colors font-semibold">
                       Campaign Guidelines
                     </a>
                     . All campaigns are subject to review before going live.
@@ -232,7 +232,7 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-4 text-lg rounded-lg btn-gradient text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-gradient h-14 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Creating Campaign..." : "Create Campaign"}
@@ -241,43 +241,39 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
             </div>
 
             {/* Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-              <div className="glass neon-border rounded-xl p-6 text-center card-hover">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 glow-blue"
-                     style={{ background: 'linear-gradient(135deg, #00BFFF20, #00BFFF05)' }}>
-                  <Target className="w-6 h-6 text-[#00BFFF]" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+                <div className="w-16 h-16 rounded-2xl icon-bg-teal flex items-center justify-center mx-auto mb-5 shadow-lg">
+                  <Target className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="mb-2 text-white">No Platform Fees</h3>
-                <p className="text-sm text-[#B0B0B0]">We don't charge any platform fees for creating campaigns</p>
+                <h3 className="mb-3 text-gray-900 text-xl font-semibold">No Platform Fees</h3>
+                <p className="text-base text-gray-600 leading-relaxed">We don't charge any platform fees for creating campaigns</p>
               </div>
-              <div className="glass neon-border rounded-xl p-6 text-center card-hover">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 glow-purple"
-                     style={{ background: 'linear-gradient(135deg, #9D4EDD20, #9D4EDD05)' }}>
-                  <FileText className="w-6 h-6 text-[#9D4EDD]" />
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+                <div className="w-16 h-16 rounded-2xl icon-bg-teal flex items-center justify-center mx-auto mb-5 shadow-lg">
+                  <FileText className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="mb-2 text-white">Quick Approval</h3>
-                <p className="text-sm text-[#B0B0B0]">Most campaigns are reviewed within 24-48 hours</p>
+                <h3 className="mb-3 text-gray-900 text-xl font-semibold">Quick Approval</h3>
+                <p className="text-base text-gray-600 leading-relaxed">Most campaigns are reviewed within 24-48 hours</p>
               </div>
-              <div className="glass neon-border rounded-xl p-6 text-center card-hover">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 glow-green"
-                     style={{ background: 'linear-gradient(135deg, #00FF9D20, #00FF9D05)' }}>
-                  <Upload className="w-6 h-6 text-[#00FF9D]" />
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+                <div className="w-16 h-16 rounded-2xl icon-bg-teal flex items-center justify-center mx-auto mb-5 shadow-lg">
+                  <Upload className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="mb-2 text-white">Easy Updates</h3>
-                <p className="text-sm text-[#B0B0B0]">Update your supporters with progress reports anytime</p>
+                <h3 className="mb-3 text-gray-900 text-xl font-semibold">Easy Updates</h3>
+                <p className="text-base text-gray-600 leading-relaxed">Update your supporters with progress reports anytime</p>
               </div>
             </div>
 
             {/* Global Success Stories */}
-            <div className="mt-20">
-              <div className="flex items-center gap-4 mb-10 justify-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center glow-green"
-                     style={{ background: 'linear-gradient(135deg, #00FF9D20, #00FF9D05)' }}>
-                  <TrendingUp className="w-7 h-7 text-[#00FF9D]" />
+            <div className="mt-24">
+              <div className="flex items-center gap-5 mb-12 justify-center">
+                <div className="w-16 h-16 rounded-2xl icon-bg-teal flex items-center justify-center shadow-lg">
+                  <TrendingUp className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-4xl text-white">Global Success Stories</h2>
+                <h2 className="text-5xl text-gray-900">Global Success Stories</h2>
               </div>
-              <p className="text-center text-[#B0B0B0] mb-12 max-w-2xl mx-auto">
+              <p className="text-center text-gray-600 text-xl mb-16 max-w-3xl mx-auto leading-relaxed">
                 Be inspired by campaigns that have changed lives and communities around the world
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -285,33 +281,33 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                   <div
                     key={index}
                     ref={(el) => (storyRefs.current[index] = el)}
-                    className={`glass neon-border rounded-2xl overflow-hidden card-hover transition-all duration-700 ${
+                    className={`bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-700 ${
                       revealedStories[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                     }`}
                     style={{
                       transitionDelay: `${index * 150}ms`,
                     }}
                   >
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-56 overflow-hidden">
                       <ImageWithFallback
                         src={story.image}
                         alt={story.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                       <div className="absolute bottom-4 left-4 right-4">
-                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/30 mb-2">
-                          <TrendingUp className="w-3 h-3" />
-                          <span>Success</span>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00BCD4]/90 text-white border border-white/20 shadow-lg">
+                          <TrendingUp className="w-4 h-4" />
+                          <span className="font-medium">Success</span>
                         </div>
                       </div>
                     </div>
-                    <div className="p-6">
-                      <h3 className="text-white mb-2">{story.title}</h3>
-                      <p className="text-sm text-[#B0B0B0] mb-4">{story.description}</p>
-                      <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                        <span className="text-sm text-[#B0B0B0]">Total Raised</span>
-                        <span className="gradient-text">{story.raised}</span>
+                    <div className="p-7">
+                      <h3 className="text-gray-900 text-xl font-semibold mb-3">{story.title}</h3>
+                      <p className="text-base text-gray-600 mb-5 leading-relaxed">{story.description}</p>
+                      <div className="flex items-center justify-between pt-5 border-t border-gray-200">
+                        <span className="text-gray-600 font-medium">Total Raised</span>
+                        <span className="text-[#00BCD4] text-xl font-bold">{story.raised}</span>
                       </div>
                     </div>
                   </div>

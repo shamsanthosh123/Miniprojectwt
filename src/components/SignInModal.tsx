@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { LogIn } from "lucide-react";
@@ -33,22 +27,24 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md glass neon-border bg-[#0A0A0A]/95 border-[#00BFFF]/30">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white text-2xl">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00BFFF] to-[#9D4EDD] flex items-center justify-center glow-blue">
-              <LogIn className="w-5 h-5 text-white" />
+      <DialogContent className="sm:max-w-xl bg-white border-gray-200">
+        <DialogHeader className="space-y-4">
+          <DialogTitle className="flex items-center gap-4 text-gray-900 text-3xl mb-2">
+            <div className="w-14 h-14 rounded-xl icon-bg-teal flex items-center justify-center shadow-lg">
+              <LogIn className="w-7 h-7 text-white" />
             </div>
             Sign In to GiveHope
           </DialogTitle>
-          <DialogDescription className="text-[#B0B0B0]">
+          <DialogDescription className="text-gray-600 text-lg leading-relaxed pt-2">
             Welcome back! Sign in to continue supporting causes that matter.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSignIn} className="space-y-5 py-4">
-          <div>
-            <Label htmlFor="signin-email" className="text-white mb-2 block">Email Address</Label>
+        <form onSubmit={handleSignIn} className="space-y-8 py-8">
+          <div className="space-y-3">
+            <Label htmlFor="signin-email" className="text-gray-900 text-base font-medium block">
+              Email Address
+            </Label>
             <Input
               id="signin-email"
               type="email"
@@ -56,14 +52,16 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+              className="input-simple h-12 text-base"
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="signin-password" className="text-white">Password</Label>
-              <button type="button" className="text-sm text-[#00BFFF] hover:text-[#00BFFF]/80 transition-colors">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="signin-password" className="text-gray-900 text-base font-medium">
+                Password
+              </Label>
+              <button type="button" className="text-sm text-[#00BCD4] hover:text-[#00838F] transition-colors font-medium">
                 Forgot password?
               </button>
             </div>
@@ -74,33 +72,33 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-white/5 border-white/10 text-white placeholder:text-[#B0B0B0]/50 input-glow"
+              className="input-simple h-12 text-base"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 rounded-lg btn-gradient text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-gradient disabled:opacity-50 h-12 text-base"
             disabled={isLoading}
           >
             {isLoading ? "Signing In..." : "Sign In"}
           </button>
 
-          <div className="relative">
+          <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#0A0A0A] text-[#B0B0B0]">or</span>
+            <div className="relative flex justify-center">
+              <span className="px-4 bg-white text-gray-500 text-base">or</span>
             </div>
           </div>
 
-          <div className="text-center text-sm text-[#B0B0B0]">
+          <div className="text-center text-base text-gray-600">
             Don't have an account?{" "}
             <button
               type="button"
               onClick={onSwitchToSignUp}
-              className="text-[#00BFFF] hover:text-[#00BFFF]/80 transition-colors"
+              className="text-[#00BCD4] hover:text-[#00838F] transition-colors font-semibold"
             >
               Sign up now
             </button>

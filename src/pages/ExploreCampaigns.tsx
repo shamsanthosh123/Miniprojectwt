@@ -109,16 +109,16 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
   const categories = ["all", "Schools", "Children", "Health Funds"];
 
   const donationCategories = [
-    { name: "Education for Children", icon: GraduationCap, color: "#00BFFF" },
-    { name: "Health & Medical Aid", icon: HeartPulse, color: "#9D4EDD" },
-    { name: "Disaster Relief", icon: CloudRain, color: "#FF5555" },
-    { name: "Animal Welfare", icon: Footprints, color: "#00FF9D" },
-    { name: "Women Empowerment", icon: Users, color: "#FF69B4" },
-    { name: "Environmental Causes", icon: Leaf, color: "#00FF9D" },
-    { name: "Old Age Support", icon: HelpingHand, color: "#9D4EDD" },
-    { name: "Food & Hunger Programs", icon: Utensils, color: "#FFB84D" },
-    { name: "Shelter for Homeless", icon: Home, color: "#00BFFF" },
-    { name: "Mental Health & Wellbeing", icon: Brain, color: "#9D4EDD" },
+    { name: "Education for Children", icon: GraduationCap, color: "#00BCD4" },
+    { name: "Health & Medical Aid", icon: HeartPulse, color: "#00BCD4" },
+    { name: "Disaster Relief", icon: CloudRain, color: "#00BCD4" },
+    { name: "Animal Welfare", icon: Footprints, color: "#00BCD4" },
+    { name: "Women Empowerment", icon: Users, color: "#00BCD4" },
+    { name: "Environmental Causes", icon: Leaf, color: "#00BCD4" },
+    { name: "Old Age Support", icon: HelpingHand, color: "#00BCD4" },
+    { name: "Food & Hunger Programs", icon: Utensils, color: "#00BCD4" },
+    { name: "Shelter for Homeless", icon: Home, color: "#00BCD4" },
+    { name: "Mental Health & Wellbeing", icon: Brain, color: "#00BCD4" },
   ];
 
   useEffect(() => {
@@ -152,39 +152,30 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
   }, []);
 
   return (
-    <div className="page-transition min-h-screen bg-black pt-24 pb-20">
-      {/* Background Glow */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-[#9D4EDD]/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-40 left-1/4 w-96 h-96 bg-[#00BFFF]/10 rounded-full blur-[120px]"></div>
-      </div>
-
+    <div className="page-transition min-h-screen bg-gray-50 pt-24 pb-20">
       <section className="relative z-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 fade-in">
-            <h1 className="text-6xl mb-4 gradient-text">Explore Campaigns</h1>
-            <p className="text-xl text-[#B0B0B0] max-w-2xl mx-auto">
+            <h1 className="text-5xl md:text-6xl mb-4 text-gray-900">Explore Campaigns</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Browse active campaigns and make a difference in the lives of people who need it most.
             </p>
           </div>
 
           {/* Emotional Donation Explanation */}
-          <div className="max-w-4xl mx-auto mb-16 glass neon-border rounded-3xl p-10 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00BFFF]/5 to-[#9D4EDD]/5"></div>
-            <div className="relative z-10">
-              <p className="text-2xl text-white mb-4 leading-relaxed">
-                "Every donation, no matter how small, changes someone's story."
-              </p>
-              <p className="text-lg text-[#B0B0B0] leading-relaxed">
-                Your kindness builds schools, feeds children, and brings hope to families in need.
-                Join hands with millions who are making the world brighter — one donation at a time.
-              </p>
-            </div>
+          <div className="max-w-4xl mx-auto mb-16 bg-gradient-to-br from-[#E0F7FA] to-white rounded-3xl p-10 text-center border border-gray-100 shadow-sm">
+            <p className="text-2xl text-gray-900 mb-4 leading-relaxed">
+              "Every donation, no matter how small, changes someone's story."
+            </p>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Your kindness builds schools, feeds children, and brings hope to families in need.
+              Join hands with millions who are making the world brighter — one donation at a time.
+            </p>
           </div>
 
           {/* Donation Categories */}
           <div className="mb-16">
-            <h2 className="text-4xl text-white text-center mb-10">Choose Your Cause</h2>
+            <h2 className="text-4xl text-gray-900 text-center mb-10">Choose Your Cause</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
               {donationCategories.map((category, index) => {
                 const Icon = category.icon;
@@ -192,23 +183,17 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
                   <div
                     key={index}
                     ref={(el) => (categoryRefs.current[index] = el)}
-                    className={`glass neon-border rounded-2xl p-6 text-center cursor-pointer card-hover transition-all duration-700 ${
+                    className={`bg-white rounded-2xl p-6 text-center cursor-pointer card-simple transition-all duration-700 ${
                       revealedCards[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                     }`}
                     style={{
                       transitionDelay: `${index * 100}ms`,
                     }}
                   >
-                    <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                      style={{
-                        background: `linear-gradient(135deg, ${category.color}20, ${category.color}05)`,
-                        boxShadow: `0 0 20px ${category.color}40`,
-                      }}
-                    >
-                      <Icon className="w-8 h-8" style={{ color: category.color }} />
+                    <div className="w-14 h-14 rounded-full bg-[#B2EBF2] flex items-center justify-center mx-auto mb-4">
+                      <Icon className="w-7 h-7 text-[#00838F]" />
                     </div>
-                    <h3 className="text-white text-sm">{category.name}</h3>
+                    <h3 className="text-gray-700 text-sm font-medium">{category.name}</h3>
                   </div>
                 );
               })}
@@ -218,14 +203,14 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
           {/* Search and Filter */}
           <div className="max-w-5xl mx-auto mb-12 flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search campaigns..."
-                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-[#B0B0B0]/50 input-glow"
+                className="w-full pl-12 pr-4 py-3 input-simple"
               />
             </div>
-            <button className="px-6 py-3 glass neon-border rounded-lg flex items-center gap-2 text-[#B0B0B0] hover:text-white transition-colors">
+            <button className="px-6 py-3 bg-white rounded-lg border-2 border-gray-200 flex items-center gap-2 text-gray-600 hover:border-gray-300 transition-colors">
               <Filter className="w-5 h-5" />
               <span>Filter</span>
             </button>
@@ -239,8 +224,8 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2.5 rounded-lg transition-all duration-300 ${
                   selectedCategory === category
-                    ? "btn-gradient text-white"
-                    : "glass border border-white/10 text-[#B0B0B0] hover:text-white hover:border-white/30"
+                    ? "bg-gray-900 text-white"
+                    : "bg-white border-2 border-gray-200 text-gray-600 hover:border-gray-300"
                 }`}
               >
                 {category === "all" ? "All Campaigns" : category}

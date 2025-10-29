@@ -57,7 +57,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)' }}>
       <Header 
         onSignInClick={() => setShowSignIn(true)}
         onSignUpClick={() => setShowSignUp(true)}
@@ -68,8 +68,7 @@ export default function App() {
       {pageHistory.length > 1 && (
         <button
           onClick={handleBack}
-          className="fixed left-6 top-24 z-40 flex items-center gap-2 px-4 py-2 glass rounded-full text-sm hover:bg-white/10 transition-all duration-300 group"
-          style={{ animation: "fadeSlideIn 0.6s ease-out" }}
+          className="fixed left-6 top-24 z-40 flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 transition-all group fade-in shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back</span>

@@ -65,7 +65,7 @@ export function Counter({ end, duration = 2000, suffix = "", prefix = "" }: Coun
   }, [isVisible, end, duration]);
 
   return (
-    <div ref={counterRef} className="text-5xl font-bold gradient-text">
+    <div ref={counterRef} className="text-4xl font-semibold text-[#00BCD4]">
       {prefix}{count.toLocaleString()}{suffix}
     </div>
   );

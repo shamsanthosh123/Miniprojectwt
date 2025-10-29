@@ -1,6 +1,5 @@
 import { Calendar, Users } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { useState, useEffect } from "react";
 
 interface CampaignCardProps {
   id: string;
@@ -27,73 +26,62 @@ export function CampaignCard({
   daysLeft,
   onDonate,
 }: CampaignCardProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const percentage = Math.round((raised / goal) * 100);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div 
-      className={`glass neon-border rounded-2xl overflow-hidden card-hover transition-all duration-800 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-      }`}
-    >
-      <div className="relative h-56 overflow-hidden group">
+    <div className="bg-white rounded-2xl overflow-hidden card-simple fade-in">
+      <div className="relative h-64 overflow-hidden group">
         <ImageWithFallback
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        <div className="absolute top-4 left-4">
-          <span className="px-3 py-1 rounded-full text-xs glass border border-[#00BFFF]/30 text-[#00BFFF]">
+        <div className="absolute top-5 left-5">
+          <span className="px-4 py-2 rounded-full text-sm bg-white/95 backdrop-blur-sm text-gray-700 font-medium shadow-lg">
             {category}
           </span>
         </div>
       </div>
       
-      <div className="p-6">
-        <h3 className="text-xl mb-2 text-white">{title}</h3>
-        <p className="text-[#B0B0B0] mb-4 line-clamp-2 text-sm">{description}</p>
+      <div className="p-7">
+        <h3 className="text-2xl mb-3 text-gray-900 font-semibold leading-tight">{title}</h3>
+        <p className="text-gray-600 mb-6 line-clamp-2 leading-relaxed">{description}</p>
         
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <div className="flex justify-between mb-2 text-sm">
-              <span className="text-[#B0B0B0]">Raised: ₹{raised.toLocaleString()}</span>
-              <span className="text-[#00FF9D]">{percentage}%</span>
+            <div className="flex justify-between mb-3">
+              <span className="text-gray-600 font-medium">Raised: ₹{raised.toLocaleString()}</span>
+              <span className="text-[#00BCD4] font-semibold text-lg">{percentage}%</span>
             </div>
             
-            {/* Progress Bar */}
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+            {/* Progress Bar with Gradient */}
+            <div className="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
               <div 
-                className="h-full progress-glow rounded-full transition-all duration-1000 ease-out"
+                className="h-full progress-bar transition-all duration-1000"
                 style={{ width: `${percentage}%` }}
               ></div>
             </div>
             
-            <div className="text-[#B0B0B0] text-sm mt-1">
+            <div className="text-gray-500 mt-2 font-medium">
               Goal: ₹{goal.toLocaleString()}
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-white/10">
-            <div className="flex items-center gap-4 text-sm text-[#B0B0B0]">
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4 text-[#00BFFF]" />
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-5 text-gray-600 font-medium">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#00BCD4]" />
                 <span>{donors.toLocaleString()}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4 text-[#9D4EDD]" />
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#00BCD4]" />
                 <span>{daysLeft}d left</span>
               </div>
             </div>
           </div>
 
           <button 
-            className="w-full py-3 rounded-lg btn-gradient text-white mt-2"
+            className="w-full btn-gradient mt-2"
             onClick={() => onDonate(id)}
           >
             Donate Now

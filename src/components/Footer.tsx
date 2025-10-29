@@ -6,20 +6,24 @@ interface FooterProps {
 
 export function Footer({ onNavigate }: FooterProps = {}) {
   return (
-    <footer className="bg-black border-t border-white/10 mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#00BFFF] to-[#9D4EDD] rounded-lg flex items-center justify-center glow-blue">
-                <Heart className="w-6 h-6 text-white" fill="white" />
+    <footer className="bg-gradient-to-b from-[#B2EBF2] to-[#80DEEA] border-t border-[#00BCD4]/20 mt-24">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+        {/* Main Footer Content - Better Spacing */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          {/* Brand Section */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center icon-bg-teal shadow-lg">
+                <Heart className="w-7 h-7 text-white" fill="white" />
               </div>
-              <span className="text-xl font-bold gradient-text">GiveHope</span>
+              <span className="text-2xl font-semibold bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] bg-clip-text text-transparent">
+                GiveHope
+              </span>
             </div>
-            <p className="text-sm text-[#B0B0B0] mb-4">
+            <p className="text-base text-gray-800 leading-relaxed max-w-xs">
               Empowering communities through transparent and impactful donations.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <SocialIcon Icon={Facebook} />
               <SocialIcon Icon={Twitter} />
               <SocialIcon Icon={Instagram} />
@@ -27,26 +31,28 @@ export function Footer({ onNavigate }: FooterProps = {}) {
             </div>
           </div>
 
-          <div>
-            <h3 className="text-white mb-4 font-semibold">Platform</h3>
-            <ul className="space-y-2 text-sm">
-              <FooterLink>Browse Campaigns</FooterLink>
-              <FooterLink>Start a Campaign</FooterLink>
-              <FooterLink>How It Works</FooterLink>
+          {/* Platform Links */}
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-white mb-6">Platform</h3>
+            <ul className="space-y-4">
+              <FooterLink onClick={() => onNavigate?.("explore")}>Browse Campaigns</FooterLink>
+              <FooterLink onClick={() => onNavigate?.("create-campaign")}>Start a Campaign</FooterLink>
+              <FooterLink onClick={() => onNavigate?.("how-it-works")}>How It Works</FooterLink>
               <FooterLink>Success Stories</FooterLink>
             </ul>
           </div>
 
-          <div>
-            <h3 className="text-white mb-4 font-semibold">Support</h3>
-            <ul className="space-y-2 text-sm">
+          {/* Support Links */}
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-white mb-6">Support</h3>
+            <ul className="space-y-4">
               <FooterLink>Help Center</FooterLink>
               <FooterLink>Contact Us</FooterLink>
               <FooterLink>Trust & Safety</FooterLink>
               <li>
                 <button 
                   onClick={() => onNavigate?.("faq")}
-                  className="text-[#B0B0B0] hover:text-[#00BFFF] transition-colors inline-block"
+                  className="text-gray-800 hover:text-white transition-colors font-medium"
                 >
                   FAQs
                 </button>
@@ -54,35 +60,50 @@ export function Footer({ onNavigate }: FooterProps = {}) {
             </ul>
           </div>
 
-          <div>
-            <h3 className="text-white mb-4 font-semibold">Contact</h3>
-            <ul className="space-y-3 text-sm text-[#B0B0B0]">
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#00BFFF]" />
-                <span>support@givehope.org</span>
+          {/* Contact Information */}
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-white mb-6">Contact</h3>
+            <ul className="space-y-5">
+              <li className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-[#00BCD4]" />
+                </div>
+                <span className="text-gray-800 font-medium">support@givehope.org</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#9D4EDD]" />
-                <span>+91 1800 123 4567</span>
+              <li className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-[#00BCD4]" />
+                </div>
+                <span className="text-gray-800 font-medium">+91 1800 123 4567</span>
               </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-[#00FF9D] mt-1" />
-                <span>Mumbai, Maharashtra, India</span>
+              <li className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-[#00BCD4]" />
+                </div>
+                <span className="text-gray-800 font-medium leading-relaxed">Mumbai, Maharashtra, India</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8"></div>
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent mb-10"></div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-[#B0B0B0]">
+        {/* Bottom Footer - Better Alignment */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-base text-gray-800 font-medium">
             © 2025 GiveHope. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 text-sm text-[#B0B0B0]">
-            <a href="#" className="hover:text-[#00BFFF] transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-[#00BFFF] transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-[#00BFFF] transition-colors">Cookie Policy</a>
+          <div className="flex items-center gap-8">
+            <a href="#" className="text-gray-800 hover:text-white transition-colors font-medium">
+              Privacy Policy
+            </a>
+            <a href="#" className="text-gray-800 hover:text-white transition-colors font-medium">
+              Terms of Service
+            </a>
+            <a href="#" className="text-gray-800 hover:text-white transition-colors font-medium">
+              Cookie Policy
+            </a>
           </div>
         </div>
       </div>
@@ -94,19 +115,22 @@ function SocialIcon({ Icon }: { Icon: any }) {
   return (
     <a 
       href="#" 
-      className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-[#B0B0B0] hover:text-[#00BFFF] hover:border-[#00BFFF]/50 transition-all duration-300 hover:glow-blue"
+      className="w-11 h-11 rounded-xl bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-white hover:bg-gradient-to-br hover:from-[#00BCD4] hover:to-[#4DD0E1] transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-5 h-5" />
     </a>
   );
 }
 
-function FooterLink({ children }: { children: React.ReactNode }) {
+function FooterLink({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
     <li>
-      <a href="#" className="text-[#B0B0B0] hover:text-[#00BFFF] transition-colors inline-block">
+      <button 
+        onClick={onClick} 
+        className="text-gray-800 hover:text-white transition-colors font-medium text-left"
+      >
         {children}
-      </a>
+      </button>
     </li>
   );
 }

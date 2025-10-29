@@ -1,4 +1,3 @@
-import { Button } from "./ui/button";
 import { Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -12,36 +11,51 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <button 
-          onClick={() => onNavigate("home")}
-          className="flex items-center gap-3 group"
-        >
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-[#00BFFF] to-[#9D4EDD] glow-blue">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-center justify-between">
+        {/* Logo */}
+        <button onClick={() => onNavigate("home")} className="flex items-center gap-3 group">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center icon-bg-teal shadow-lg transition-transform group-hover:scale-105">
             <Heart className="w-6 h-6 text-white" fill="white" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-[#00BFFF] to-[#9D4EDD] bg-clip-text text-transparent">
+          <span className="text-2xl font-semibold bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] bg-clip-text text-transparent">
             GiveHope
           </span>
         </button>
         
-        <nav className="hidden lg:flex items-center gap-8">
-          <NavLink onClick={() => onNavigate("explore")}>Explore Campaigns</NavLink>
-          <NavLink onClick={() => onNavigate("how-it-works")}>How It Works</NavLink>
-          <NavLink onClick={() => onNavigate("start-donating")}>Start Donating</NavLink>
+        {/* Desktop Nav */}
+        <nav className="hidden lg:flex items-center gap-10">
+          <button 
+            onClick={() => onNavigate("explore")} 
+            className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium"
+          >
+            Explore Campaigns
+          </button>
+          <button 
+            onClick={() => onNavigate("how-it-works")} 
+            className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium"
+          >
+            How It Works
+          </button>
+          <button 
+            onClick={() => onNavigate("start-donating")} 
+            className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium"
+          >
+            Start Donating
+          </button>
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        {/* Desktop Auth Buttons */}
+        <div className="hidden lg:flex items-center gap-4">
           <button
             onClick={onSignInClick}
-            className="px-6 py-2.5 rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300 hover:glow-blue"
+            className="btn-auth-secondary"
           >
             Login
           </button>
           <button
             onClick={onSignUpClick}
-            className="px-6 py-2.5 rounded-lg btn-gradient text-white"
+            className="btn-auth"
           >
             Sign Up
           </button>
@@ -49,64 +63,53 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
 
         {/* Mobile Menu Button */}
         <button 
-          className="lg:hidden p-2 text-[#00BFFF]"
+          className="lg:hidden p-2 text-gray-700 hover:text-[#00BCD4] transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden glass border-t border-white/10">
-          <nav className="container mx-auto px-4 py-6 flex flex-col gap-4">
-            <MobileNavLink onClick={() => { onNavigate("explore"); setMobileMenuOpen(false); }}>
+        <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg">
+          <nav className="max-w-7xl mx-auto px-6 py-6 flex flex-col gap-5">
+            <button 
+              onClick={() => { onNavigate("explore"); setMobileMenuOpen(false); }} 
+              className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium text-left py-2"
+            >
               Explore Campaigns
-            </MobileNavLink>
-            <MobileNavLink onClick={() => { onNavigate("how-it-works"); setMobileMenuOpen(false); }}>
+            </button>
+            <button 
+              onClick={() => { onNavigate("how-it-works"); setMobileMenuOpen(false); }} 
+              className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium text-left py-2"
+            >
               How It Works
-            </MobileNavLink>
-            <MobileNavLink onClick={() => { onNavigate("start-donating"); setMobileMenuOpen(false); }}>
+            </button>
+            <button 
+              onClick={() => { onNavigate("start-donating"); setMobileMenuOpen(false); }} 
+              className="text-gray-700 hover:text-[#00BCD4] transition-colors font-medium text-left py-2"
+            >
               Start Donating
-            </MobileNavLink>
-            <button
-              onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
-              className="px-6 py-2.5 rounded-lg border border-[#00BFFF]/30 text-[#00BFFF] hover:bg-[#00BFFF]/10 transition-all duration-300"
-            >
-              Login
             </button>
-            <button
-              onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
-              className="px-6 py-2.5 rounded-lg btn-gradient text-white"
-            >
-              Sign Up
-            </button>
+            
+            <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
+                className="btn-auth-secondary text-center"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
+                className="btn-auth text-center"
+              >
+                Sign Up
+              </button>
+            </div>
           </nav>
         </div>
       )}
     </header>
-  );
-}
-
-function NavLink({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="text-[#B0B0B0] hover:text-[#00BFFF] transition-all duration-300 relative group"
-    >
-      {children}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#00BFFF] to-[#9D4EDD] group-hover:w-full transition-all duration-300"></span>
-    </button>
-  );
-}
-
-function MobileNavLink({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="text-[#B0B0B0] hover:text-[#00BFFF] transition-all duration-300 text-left py-2"
-    >
-      {children}
-    </button>
   );
 }
