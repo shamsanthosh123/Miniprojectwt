@@ -9,7 +9,11 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 import { Heart } from "lucide-react";
+import { donorAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -18,22 +22,82 @@ interface DonationModalProps {
     id: string;
     title: string;
   } | null;
+  onDonationSuccess?: () => void;
 }
 
-export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps) {
+export function DonationModal({ isOpen, onClose, campaign, onDonationSuccess }: DonationModalProps) {
   const [amount, setAmount] = useState("500");
   const [customAmount, setCustomAmount] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [displayPublicly, setDisplayPublicly] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const predefinedAmounts = ["100", "250", "500", "1000", "2500"];
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
+    // Validation
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!email.trim() || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (!phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+
+    const donationAmount = amount === "custom" ? parseFloat(customAmount) : parseFloat(amount);
+    if (isNaN(donationAmount) || donationAmount <= 0) {
+      toast.error("Please enter a valid donation amount");
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
+
+    try {
+      const response = await donorAPI.createDonation({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        amount: donationAmount,
+        campaignId: campaign!.id,
+        message: message.trim() || undefined,
+        displayPublicly,
+      });
+
+      if (response.success) {
+        toast.success(`Thank you for donating ₹${donationAmount}! Your contribution makes a difference.`);
+        
+        // Reset form
+        setAmount("500");
+        setCustomAmount("");
+        setName("");
+        setEmail("");
+        setPhone("");
+        setMessage("");
+        setDisplayPublicly(true);
+        
+        // Call success callback if provided
+        if (onDonationSuccess) {
+          onDonationSuccess();
+        }
+        
+        onClose();
+      } else {
+        toast.error(response.message || "Failed to process donation");
+      }
+    } catch (error: any) {
+      console.error("Donation error:", error);
+      toast.error(error.message || "Failed to process donation. Please try again.");
+    } finally {
       setIsProcessing(false);
-      alert(`Thank you for donating ₹${amount === "custom" ? customAmount : amount}!`);
-      onClose();
-    }, 1500);
+    }
   };
 
   if (!campaign) return null;
@@ -103,22 +167,60 @@ export function DonationModal({ isOpen, onClose, campaign }: DonationModalProps)
           <div className="h-px bg-gray-200"></div>
 
           <div>
-            <Label htmlFor="name" className="text-gray-900 mb-2 block">Your Name</Label>
+            <Label htmlFor="name" className="text-gray-900 mb-2 block">Your Name *</Label>
             <Input 
               id="name" 
               placeholder="John Doe" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="input-simple" 
             />
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-gray-900 mb-2 block">Email Address</Label>
+            <Label htmlFor="email" className="text-gray-900 mb-2 block">Email Address *</Label>
             <Input 
               id="email" 
               type="email" 
               placeholder="john@example.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="input-simple"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="phone" className="text-gray-900 mb-2 block">Phone Number *</Label>
+            <Input 
+              id="phone" 
+              type="tel" 
+              placeholder="+91 1234567890" 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="input-simple"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="message" className="text-gray-900 mb-2 block">Message (Optional)</Label>
+            <Textarea 
+              id="message" 
+              placeholder="Add a message of support..." 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="input-simple min-h-[80px]"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="displayPublicly" 
+              checked={displayPublicly}
+              onCheckedChange={(checked) => setDisplayPublicly(checked as boolean)}
+            />
+            <Label htmlFor="displayPublicly" className="text-sm text-gray-600 cursor-pointer">
+              Display my name publicly as a donor
+            </Label>
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">

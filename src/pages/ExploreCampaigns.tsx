@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { CampaignCard } from "../components/CampaignCard";
 import { DonationModal } from "../components/DonationModal";
 import { Search, Filter, GraduationCap, HeartPulse, CloudRain, Footprints, Users, Leaf, Home, Utensils, HelpingHand, Brain } from "lucide-react";
+import { campaignAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface Campaign {
   id: string;
@@ -22,10 +24,73 @@ interface ExploreCampaignsProps {
 export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
   const [selectedCampaign, setSelectedCampaign] = useState<{ id: string; title: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [revealedCards, setRevealedCards] = useState<boolean[]>(new Array(10).fill(false));
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [revealedCards, setRevealedCards] = useState<boolean[]>([]);
   const categoryRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const campaigns: Campaign[] = [
+  // Fetch campaigns from backend
+  useEffect(() => {
+    fetchCampaigns();
+  }, [selectedCategory]);
+
+  const fetchCampaigns = async () => {
+    setIsLoading(true);
+    try {
+      const params: any = { status: 'active' };
+      if (selectedCategory && selectedCategory !== 'all') {
+        params.category = selectedCategory;
+      }
+
+      const response = await campaignAPI.getAllCampaigns(params);
+      
+      if (response.success && response.data) {
+        // Transform backend data to match frontend format
+        const transformedCampaigns = response.data.map((campaign: any) => {
+          const daysLeft = Math.max(0, Math.ceil((new Date(campaign.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+          
+          return {
+            id: campaign._id,
+            title: campaign.title,
+            description: campaign.description,
+            image: campaign.image || getDefaultImageForCategory(campaign.category),
+            category: campaign.category,
+            raised: campaign.collected || 0,
+            goal: campaign.goal,
+            donors: campaign.donorCount || 0,
+            daysLeft: daysLeft,
+          };
+        });
+        
+        setCampaigns(transformedCampaigns);
+        setRevealedCards(new Array(transformedCampaigns.length).fill(false));
+      } else {
+        // Fallback to mock data if backend fails
+        setCampaigns(getMockCampaigns());
+        setRevealedCards(new Array(getMockCampaigns().length).fill(false));
+      }
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      toast.error("Failed to load campaigns. Showing sample data.");
+      // Fallback to mock data
+      setCampaigns(getMockCampaigns());
+      setRevealedCards(new Array(getMockCampaigns().length).fill(false));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getDefaultImageForCategory = (category: string): string => {
+    const imageMap: { [key: string]: string } = {
+      schools: "https://images.unsplash.com/photo-1727473704473-e4fe94b45b96?w=1080",
+      children: "https://images.unsplash.com/photo-1561429743-6ed153ad7071?w=1080",
+      health: "https://images.unsplash.com/photo-1512069511692-b82d787265cf?w=1080",
+      other: "https://images.unsplash.com/photo-1684997827975-21b5a6e434e9?w=1080",
+    };
+    return imageMap[category.toLowerCase()] || "https://images.unsplash.com/photo-1684997827975-21b5a6e434e9?w=1080";
+  };
+
+  const getMockCampaigns = (): Campaign[] => [
     {
       id: "1",
       title: "Education for Underprivileged Children",
@@ -234,15 +299,32 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
           </div>
 
           {/* Campaign Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filterByCategory(selectedCategory).map((campaign) => (
-              <CampaignCard
-                key={campaign.id}
-                {...campaign}
-                onDonate={handleDonate}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-20">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-[#00BCD4]"></div>
+              <p className="mt-4 text-gray-600">Loading campaigns...</p>
+            </div>
+          ) : campaigns.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-xl text-gray-600">No campaigns found in this category.</p>
+              <button 
+                onClick={() => setSelectedCategory("all")}
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] text-white rounded-lg"
+              >
+                View All Campaigns
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filterByCategory(selectedCategory).map((campaign) => (
+                <CampaignCard
+                  key={campaign.id}
+                  {...campaign}
+                  onDonate={handleDonate}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -250,6 +332,7 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
         isOpen={!!selectedCampaign}
         onClose={() => setSelectedCampaign(null)}
         campaign={selectedCampaign}
+        onDonationSuccess={fetchCampaigns}
       />
     </div>
   );

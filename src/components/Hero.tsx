@@ -1,17 +1,50 @@
 import { ArrowRight, Users, DollarSign, Heart } from "lucide-react";
 import { Counter } from "./Counter";
 import { useEffect, useState } from "react";
+import { campaignAPI, donorAPI } from "../utils/api";
 
 interface HeroProps {
   onNavigate: (page: string) => void;
 }
 
+interface Stats {
+  totalDonors: number;
+  totalFundsRaised: number;
+  activeCampaigns: number;
+}
+
 export function Hero({ onNavigate }: HeroProps) {
   const [show, setShow] = useState(false);
+  const [stats, setStats] = useState<Stats>({
+    totalDonors: 50000,
+    totalFundsRaised: 10000000,
+    activeCampaigns: 500,
+  });
 
   useEffect(() => {
     setShow(true);
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [campaignStatsRes, donorStatsRes] = await Promise.all([
+        campaignAPI.getCampaignStats(),
+        donorAPI.getDonationStats(),
+      ]);
+
+      if (campaignStatsRes.success && donorStatsRes.success) {
+        setStats({
+          totalDonors: donorStatsRes.data?.totalDonors || 50000,
+          totalFundsRaised: donorStatsRes.data?.totalAmount || 10000000,
+          activeCampaigns: campaignStatsRes.data?.activeCampaigns || 500,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      // Keep default values on error
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-20" style={{
@@ -66,7 +99,7 @@ export function Hero({ onNavigate }: HeroProps) {
                 <Users className="w-8 h-8 text-white" />
               </div>
               <div className="stats-number">
-                <Counter end={50} suffix="K+" />
+                <Counter end={Math.floor(stats.totalDonors / 1000)} suffix="K+" />
               </div>
               <div className="stats-label">Active Donors</div>
             </div>
@@ -77,7 +110,7 @@ export function Hero({ onNavigate }: HeroProps) {
                 <DollarSign className="w-8 h-8 text-white" />
               </div>
               <div className="stats-number">
-                <Counter end={10} suffix=" Cr" prefix="₹" />
+                <Counter end={Math.floor(stats.totalFundsRaised / 10000000)} suffix=" Cr" prefix="₹" />
               </div>
               <div className="stats-label">Funds Raised</div>
             </div>
@@ -88,7 +121,7 @@ export function Hero({ onNavigate }: HeroProps) {
                 <Heart className="w-8 h-8 text-white" fill="white" />
               </div>
               <div className="stats-number">
-                <Counter end={500} suffix="+" />
+                <Counter end={stats.activeCampaigns} suffix="+" />
               </div>
               <div className="stats-label">Active Campaigns</div>
             </div>

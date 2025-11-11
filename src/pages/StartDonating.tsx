@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CampaignCard } from "../components/CampaignCard";
 import { DonationModal } from "../components/DonationModal";
 import { Heart, Zap, TrendingUp, ArrowRight } from "lucide-react";
+import { campaignAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface Campaign {
   id: string;
@@ -21,8 +23,58 @@ interface StartDonatingProps {
 
 export function StartDonating({ onNavigate }: StartDonatingProps = {}) {
   const [selectedCampaign, setSelectedCampaign] = useState<{ id: string; title: string } | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const featuredCampaigns: Campaign[] = [
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    setIsLoading(true);
+    try {
+      const response = await campaignAPI.getAllCampaigns({ status: 'active', sortBy: 'recent' });
+      
+      if (response.success && response.data) {
+        const transformedCampaigns = response.data.map((campaign: any) => {
+          const daysLeft = Math.max(0, Math.ceil((new Date(campaign.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+          
+          return {
+            id: campaign._id,
+            title: campaign.title,
+            description: campaign.description,
+            image: campaign.image || getDefaultImageForCategory(campaign.category),
+            category: campaign.category,
+            raised: campaign.collected || 0,
+            goal: campaign.goal,
+            donors: campaign.donorCount || 0,
+            daysLeft: daysLeft,
+          };
+        });
+        
+        setCampaigns(transformedCampaigns);
+      } else {
+        setCampaigns(getMockCampaigns());
+      }
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      setCampaigns(getMockCampaigns());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getDefaultImageForCategory = (category: string): string => {
+    const imageMap: { [key: string]: string } = {
+      schools: "https://images.unsplash.com/photo-1727473704473-e4fe94b45b96?w=1080",
+      children: "https://images.unsplash.com/photo-1561429743-6ed153ad7071?w=1080",
+      health: "https://images.unsplash.com/photo-1512069511692-b82d787265cf?w=1080",
+      other: "https://images.unsplash.com/photo-1684997827975-21b5a6e434e9?w=1080",
+    };
+    return imageMap[category.toLowerCase()] || "https://images.unsplash.com/photo-1684997827975-21b5a6e434e9?w=1080";
+  };
+
+  const getMockCampaigns = (): Campaign[] => [
     {
       id: "1",
       title: "Education for Underprivileged Children",
@@ -214,6 +266,7 @@ export function StartDonating({ onNavigate }: StartDonatingProps = {}) {
         isOpen={!!selectedCampaign}
         onClose={() => setSelectedCampaign(null)}
         campaign={selectedCampaign}
+        onDonationSuccess={fetchCampaigns}
       />
     </div>
   );

@@ -9,9 +9,11 @@ import { HowItWorks } from "./pages/HowItWorks";
 import { StartDonating } from "./pages/StartDonating";
 import { CreateCampaign } from "./pages/CreateCampaign";
 import { FAQPage } from "./pages/FAQPage";
-import { ArrowLeft } from "lucide-react";
+import { VisualDocumentation } from "./pages/VisualDocumentation";
+import { ArrowLeft, FileText } from "lucide-react";
+import { Toaster } from "sonner@2.0.3";
 
-type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq";
+type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq" | "visual-docs";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("home");
@@ -51,6 +53,8 @@ export default function App() {
         return <CreateCampaign onNavigate={handleNavigate} />;
       case "faq":
         return <FAQPage />;
+      case "visual-docs":
+        return <VisualDocumentation onNavigate={handleNavigate} />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }
@@ -74,6 +78,15 @@ export default function App() {
           <span>Back</span>
         </button>
       )}
+
+      {/* Visual Documentation Button */}
+      <button
+        onClick={() => handleNavigate("visual-docs")}
+        className="fixed right-6 bottom-6 z-40 flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] text-white rounded-full shadow-lg hover:shadow-xl transition-all group"
+      >
+        <FileText className="w-5 h-5" />
+        <span className="font-medium">View Page Designs</span>
+      </button>
       
       {renderPage()}
 
@@ -96,6 +109,9 @@ export default function App() {
           setShowSignIn(true);
         }}
       />
+
+      {/* Toast Notifications */}
+      <Toaster position="top-right" richColors closeButton />
     </div>
   );
 }

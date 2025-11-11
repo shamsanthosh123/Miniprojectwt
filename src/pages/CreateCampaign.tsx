@@ -5,6 +5,8 @@ import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Upload, FileText, Target, Calendar, Image as ImageIcon, Sparkles, TrendingUp } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { campaignAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface CreateCampaignProps {
   onNavigate?: (page: string) => void;
@@ -16,6 +18,8 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
   const [category, setCategory] = useState("");
   const [goal, setGoal] = useState("");
   const [duration, setDuration] = useState("");
+  const [creatorName, setCreatorName] = useState("");
+  const [creatorEmail, setCreatorEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [revealedStories, setRevealedStories] = useState<boolean[]>(new Array(3).fill(false));
   const storyRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -71,14 +75,79 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!title.trim()) {
+      toast.error("Please enter a campaign title");
+      return;
+    }
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Please enter a campaign description");
+      return;
+    }
+    if (!goal || parseFloat(goal) <= 0) {
+      toast.error("Please enter a valid funding goal");
+      return;
+    }
+    if (!duration || parseInt(duration) <= 0) {
+      toast.error("Please enter a valid campaign duration");
+      return;
+    }
+    if (!creatorName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!creatorEmail.trim() || !creatorEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     setIsSubmitting(true);
     
-    setTimeout(() => {
+    try {
+      const response = await campaignAPI.createCampaign({
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        goal: parseFloat(goal),
+        duration: parseInt(duration),
+        creatorName: creatorName.trim(),
+        creatorEmail: creatorEmail.trim(),
+      });
+
+      if (response.success) {
+        toast.success("Campaign created successfully! It will be reviewed by our team within 24-48 hours.");
+        
+        // Reset form
+        setTitle("");
+        setDescription("");
+        setCategory("");
+        setGoal("");
+        setDuration("");
+        setCreatorName("");
+        setCreatorEmail("");
+        
+        // Navigate to explore page after a short delay
+        setTimeout(() => {
+          if (onNavigate) {
+            onNavigate("explore");
+          }
+        }, 2000);
+      } else {
+        toast.error(response.message || "Failed to create campaign");
+      }
+    } catch (error: any) {
+      console.error("Campaign creation error:", error);
+      toast.error(error.message || "Failed to create campaign. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      alert("Campaign created successfully! It will be reviewed by our team.");
-    }, 2000);
+    }
   };
 
   return (
@@ -184,6 +253,38 @@ export function CreateCampaign({ onNavigate }: CreateCampaignProps = {}) {
                     placeholder="30"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
+                    required
+                    className="input-simple h-14 text-base"
+                  />
+                </div>
+
+                {/* Creator Name */}
+                <div className="space-y-3">
+                  <Label htmlFor="creatorName" className="text-gray-900 text-base font-medium block">
+                    Your Name *
+                  </Label>
+                  <Input
+                    id="creatorName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={creatorName}
+                    onChange={(e) => setCreatorName(e.target.value)}
+                    required
+                    className="input-simple h-14 text-base"
+                  />
+                </div>
+
+                {/* Creator Email */}
+                <div className="space-y-3">
+                  <Label htmlFor="creatorEmail" className="text-gray-900 text-base font-medium block">
+                    Your Email *
+                  </Label>
+                  <Input
+                    id="creatorEmail"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={creatorEmail}
+                    onChange={(e) => setCreatorEmail(e.target.value)}
                     required
                     className="input-simple h-14 text-base"
                   />
