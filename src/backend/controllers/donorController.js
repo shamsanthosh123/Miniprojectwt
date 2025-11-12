@@ -1,23 +1,27 @@
 const Donor = require('../models/Donor');
 const Campaign = require('../models/Campaign');
+const { validationResult } = require('express-validator');
 
 // @desc    Create new donation
 // @route   POST /api/donors
 // @access  Public
 const createDonation = async (req, res) => {
   try {
-    const { name, email, phone, amount, campaignId, message, displayPublicly } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !phone || !amount || !campaignId) {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields'
+        message: 'Validation failed',
+        errors: errors.array()
       });
     }
 
-    // Check if campaign exists
+    const { name, email, phone, amount, campaignId, message, displayPublicly } = req.body;
+
+    // Check if campaign exists and is active
     const campaign = await Campaign.findById(campaignId);
+    
     if (!campaign) {
       return res.status(404).json({
         success: false,
@@ -25,56 +29,46 @@ const createDonation = async (req, res) => {
       });
     }
 
-    // Check if campaign is active
     if (campaign.status !== 'active') {
       return res.status(400).json({
         success: false,
-        message: 'This campaign is no longer accepting donations'
+        message: 'Campaign is not active for donations'
+      });
+    }
+
+    // Check if campaign is expired
+    if (campaign.isExpired) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campaign has expired'
       });
     }
 
     // Create donation
-    const donor = await Donor.create({
+    const donation = await Donor.create({
       name,
       email,
       phone,
-      amount: Number(amount),
+      amount,
       campaignId,
-      campaignTitle: campaign.title,
-      message: message || '',
+      message: message || null,
       displayPublicly: displayPublicly !== undefined ? displayPublicly : true,
-      paymentStatus: 'completed'
+      paymentStatus: 'completed', // In production, this would be 'pending' until payment gateway confirms
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent')
     });
-
-    // Update campaign collected amount and donor count
-    campaign.collected += Number(amount);
-    campaign.donorCount += 1;
-
-    // Check if goal is reached
-    if (campaign.collected >= campaign.goal) {
-      campaign.status = 'completed';
-    }
-
-    await campaign.save();
 
     res.status(201).json({
       success: true,
-      message: 'Donation recorded successfully',
-      data: donor,
-      campaign: {
-        id: campaign._id,
-        title: campaign.title,
-        collected: campaign.collected,
-        goal: campaign.goal,
-        progressPercentage: campaign.progressPercentage
-      }
+      message: 'Donation created successfully',
+      data: donation
     });
 
   } catch (error) {
-    console.error('Error creating donation:', error);
+    console.error('Create donation error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error processing donation',
+      message: 'Error creating donation',
       error: error.message
     });
   }
@@ -85,36 +79,35 @@ const createDonation = async (req, res) => {
 // @access  Public
 const getAllDonations = async (req, res) => {
   try {
-    const { campaignId, limit, page } = req.query;
+    const { campaignId, limit = 50, page = 1, status = 'completed' } = req.query;
 
-    const filter = {};
+    const query = { paymentStatus: status };
+    
     if (campaignId) {
-      filter.campaignId = campaignId;
+      query.campaignId = campaignId;
     }
 
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
-    const skip = (pageNum - 1) * limitNum;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const donors = await Donor.find(filter)
+    const donations = await Donor.find(query)
+      .populate('campaignId', 'title category')
       .sort({ date: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .populate('campaignId', 'title category');
+      .limit(parseInt(limit))
+      .skip(skip);
 
-    const total = await Donor.countDocuments(filter);
+    const total = await Donor.countDocuments(query);
 
     res.status(200).json({
       success: true,
-      count: donors.length,
+      count: donations.length,
       total,
-      page: pageNum,
-      pages: Math.ceil(total / limitNum),
-      data: donors
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
+      data: donations
     });
 
   } catch (error) {
-    console.error('Error fetching donations:', error);
+    console.error('Get donations error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching donations',
@@ -128,9 +121,10 @@ const getAllDonations = async (req, res) => {
 // @access  Public
 const getDonationById = async (req, res) => {
   try {
-    const donor = await Donor.findById(req.params.id).populate('campaignId');
+    const donation = await Donor.findById(req.params.id)
+      .populate('campaignId', 'title category goal collected');
 
-    if (!donor) {
+    if (!donation) {
       return res.status(404).json({
         success: false,
         message: 'Donation not found'
@@ -139,11 +133,11 @@ const getDonationById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: donor
+      data: donation
     });
 
   } catch (error) {
-    console.error('Error fetching donation:', error);
+    console.error('Get donation error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching donation',
@@ -157,30 +151,79 @@ const getDonationById = async (req, res) => {
 // @access  Public
 const getDonationStats = async (req, res) => {
   try {
-    const totalDonations = await Donor.countDocuments();
-    const totalAmount = await Donor.aggregate([
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
+    const stats = await Donor.getStatistics();
 
-    const recentDonations = await Donor.find()
-      .sort({ date: -1 })
-      .limit(10)
-      .populate('campaignId', 'title');
+    // Get recent donations
+    const recentDonations = await Donor.getRecentDonations(10);
+
+    // Get top donors
+    const topDonors = await Donor.getTopDonors(5);
 
     res.status(200).json({
       success: true,
       data: {
-        totalDonations,
-        totalAmount: totalAmount[0]?.total || 0,
-        recentDonations
+        ...stats,
+        recentDonations,
+        topDonors
       }
     });
 
   } catch (error) {
-    console.error('Error fetching stats:', error);
+    console.error('Get stats error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching statistics',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get donations by campaign
+// @route   GET /api/donors/campaign/:campaignId
+// @access  Public
+const getDonationsByCampaign = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    const { limit = 20 } = req.query;
+
+    const donations = await Donor.getByCampaign(campaignId, parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      count: donations.length,
+      data: donations
+    });
+
+  } catch (error) {
+    console.error('Get campaign donations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching campaign donations',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get recent donations (public feed)
+// @route   GET /api/donors/recent
+// @access  Public
+const getRecentDonations = async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+
+    const donations = await Donor.getRecentDonations(parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      count: donations.length,
+      data: donations
+    });
+
+  } catch (error) {
+    console.error('Get recent donations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching recent donations',
       error: error.message
     });
   }
@@ -190,5 +233,7 @@ module.exports = {
   createDonation,
   getAllDonations,
   getDonationById,
-  getDonationStats
+  getDonationStats,
+  getDonationsByCampaign,
+  getRecentDonations
 };

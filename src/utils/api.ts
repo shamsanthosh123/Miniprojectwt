@@ -58,8 +58,19 @@ class ApiService {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('API Error:', error);
+      
+      // Better error messages for common issues
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error(
+          '❌ Cannot connect to backend server. Please ensure:\n' +
+          '1. Backend server is running (npm run dev in /backend)\n' +
+          '2. Server is accessible at ' + this.baseURL + '\n' +
+          '3. Check backend terminal for errors'
+        );
+      }
+      
       throw error;
     }
   }

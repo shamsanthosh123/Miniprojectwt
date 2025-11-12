@@ -1,5 +1,7 @@
-import { Heart, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Heart, Menu, X, Shield, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { adminAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface HeaderProps {
   onSignInClick: () => void;
@@ -9,6 +11,19 @@ interface HeaderProps {
 
 export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(adminAPI.isAuthenticated());
+  }, []);
+
+  const handleLogout = () => {
+    adminAPI.logout();
+    setIsAdmin(false);
+    toast.success('Logged out successfully');
+    onNavigate('home');
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md shadow-sm">
@@ -47,18 +62,39 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
 
         {/* Desktop Auth Buttons */}
         <div className="hidden lg:flex items-center gap-4">
-          <button
-            onClick={onSignInClick}
-            className="btn-auth-secondary"
-          >
-            Login
-          </button>
-          <button
-            onClick={onSignUpClick}
-            className="btn-auth"
-          >
-            Sign Up
-          </button>
+          {isAdmin ? (
+            <>
+              <button
+                onClick={() => onNavigate('admin-dashboard')}
+                className="flex items-center gap-2 px-5 py-2.5 text-[#00BCD4] hover:bg-[#E0F7FA] rounded-lg transition-colors font-medium"
+              >
+                <Shield className="w-4 h-4" />
+                Admin Dashboard
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 btn-auth-secondary"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={onSignInClick}
+                className="btn-auth-secondary"
+              >
+                Login
+              </button>
+              <button
+                onClick={onSignUpClick}
+                className="btn-auth"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -94,18 +130,39 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
             </button>
             
             <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
-              <button
-                onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
-                className="btn-auth-secondary text-center"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
-                className="btn-auth text-center"
-              >
-                Sign Up
-              </button>
+              {isAdmin ? (
+                <>
+                  <button
+                    onClick={() => { onNavigate('admin-dashboard'); setMobileMenuOpen(false); }}
+                    className="flex items-center justify-center gap-2 btn-auth-secondary text-center"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin Dashboard
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 btn-auth-secondary text-center"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
+                    className="btn-auth-secondary text-center"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
+                    className="btn-auth text-center"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </nav>
         </div>

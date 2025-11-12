@@ -1,11 +1,15 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
-// Protect routes - verify JWT token
+// Verify JWT token and protect routes
 const protect = async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  // Check if authorization header exists and starts with 'Bearer'
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     try {
       // Get token from header
       token = req.headers.authorization.split(' ')[1];
@@ -13,13 +17,13 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get admin from token
+      // Get admin from token (exclude password)
       req.admin = await Admin.findById(decoded.id).select('-password');
 
       if (!req.admin) {
         return res.status(401).json({
           success: false,
-          message: 'Not authorized, admin not found'
+          message: 'Admin not found'
         });
       }
 
@@ -31,12 +35,20 @@ const protect = async (req, res, next) => {
       }
 
       next();
-
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Auth middleware error:', error.message);
+      
+      let message = 'Not authorized';
+      
+      if (error.name === 'JsonWebTokenError') {
+        message = 'Invalid token';
+      } else if (error.name === 'TokenExpiredError') {
+        message = 'Token expired';
+      }
+      
       return res.status(401).json({
         success: false,
-        message: 'Not authorized, token failed'
+        message
       });
     }
   }
@@ -44,13 +56,20 @@ const protect = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized, no token'
+      message: 'No token provided, authorization denied'
     });
   }
 };
 
-// Check if user is super admin
-const isSuperAdmin = (req, res, next) => {
+// Generate JWT token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d' // Token expires in 30 days
+  });
+};
+
+// Optional: Middleware to check if user is superadmin
+const superAdminOnly = (req, res, next) => {
   if (req.admin && req.admin.role === 'superadmin') {
     next();
   } else {
@@ -61,4 +80,4 @@ const isSuperAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, isSuperAdmin };
+module.exports = { protect, generateToken, superAdminOnly };

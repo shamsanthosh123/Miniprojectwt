@@ -1,60 +1,52 @@
-/**
- * Script to create default admin user
- * Run this after setting up MongoDB connection
- * 
- * Usage: node scripts/createAdmin.js
- */
-
+require('dotenv').config();
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const Admin = require('../models/Admin');
+const connectDB = require('../config/db');
 
-// Load environment variables
-dotenv.config();
-
-const createDefaultAdmin = async () => {
+const createAdmin = async () => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Connect to database
+    await connectDB();
 
-    console.log('✅ Connected to MongoDB');
+    console.log('\n' + '='.repeat(50));
+    console.log('🔐 Admin Account Creation');
+    console.log('='.repeat(50) + '\n');
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email: 'admin@donation.com' });
 
     if (existingAdmin) {
-      console.log('⚠️  Default admin already exists');
-      console.log('📧 Email:', existingAdmin.email);
-      console.log('👤 Name:', existingAdmin.name);
+      console.log('⚠️  Admin account already exists!');
+      console.log('\n📧 Email: admin@donation.com');
+      console.log('🔑 Password: Use your existing password');
+      console.log('\n💡 Tip: If you forgot your password, delete the admin from MongoDB and run this script again.\n');
       process.exit(0);
     }
 
-    // Create new admin
+    // Create default admin
     const admin = await Admin.create({
       email: 'admin@donation.com',
-      password: 'admin123', // Will be hashed automatically
-      name: 'Super Administrator',
+      password: 'admin123',
+      name: 'Platform Administrator',
       role: 'superadmin',
       isActive: true
     });
 
-    console.log('\n✅ Default admin created successfully!\n');
-    console.log('📧 Email:', admin.email);
-    console.log('🔑 Password: admin123');
-    console.log('👤 Name:', admin.name);
-    console.log('🎭 Role:', admin.role);
-    console.log('\n⚠️  IMPORTANT: Please change the default password immediately!\n');
+    console.log('✅ Admin account created successfully!\n');
+    console.log('📋 Admin Details:');
+    console.log('   📧 Email: admin@donation.com');
+    console.log('   🔑 Password: admin123');
+    console.log('   👤 Name: Platform Administrator');
+    console.log('   🎭 Role: superadmin\n');
+    console.log('⚠️  IMPORTANT: Change this password immediately after first login!\n');
+    console.log('='.repeat(50) + '\n');
 
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('\n❌ Error creating admin:', error.message);
     process.exit(1);
   }
 };
 
-// Run the script
-createDefaultAdmin();
+createAdmin();

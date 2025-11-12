@@ -1,37 +1,32 @@
 const Admin = require('../models/Admin');
-const Donor = require('../models/Donor');
 const Campaign = require('../models/Campaign');
-const jwt = require('jsonwebtoken');
-
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
-  });
-};
+const Donor = require('../models/Donor');
+const { generateToken } = require('../middleware/auth');
+const { validationResult } = require('express-validator');
 
 // @desc    Admin login
 // @route   POST /api/admin/login
 // @access  Public
 const adminLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and password'
+        message: 'Validation failed',
+        errors: errors.array()
       });
     }
 
+    const { email, password } = req.body;
+
     // Check if admin exists
-    const admin = await Admin.findOne({ email }).select('+password');
+    const admin = await Admin.findOne({ email });
 
     if (!admin) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid email or password'
       });
     }
 
@@ -39,23 +34,22 @@ const adminLogin = async (req, res) => {
     if (!admin.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Account is deactivated. Please contact support.'
       });
     }
 
-    // Verify password
-    const isPasswordCorrect = await admin.comparePassword(password);
+    // Check password
+    const isPasswordValid = await admin.comparePassword(password);
 
-    if (!isPasswordCorrect) {
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid email or password'
       });
     }
 
     // Update last login
-    admin.lastLogin = new Date();
-    await admin.save();
+    await admin.updateLastLogin();
 
     // Generate token
     const token = generateToken(admin._id);
@@ -64,7 +58,7 @@ const adminLogin = async (req, res) => {
       success: true,
       message: 'Login successful',
       token,
-      admin: {
+      data: {
         id: admin._id,
         email: admin.email,
         name: admin.name,
@@ -73,7 +67,7 @@ const adminLogin = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Admin login error:', error);
     res.status(500).json({
       success: false,
       message: 'Error during login',
@@ -84,108 +78,80 @@ const adminLogin = async (req, res) => {
 
 // @desc    Get admin dashboard summary
 // @route   GET /api/admin/summary
-// @access  Private (Admin)
-const getAdminSummary = async (req, res) => {
+// @access  Admin
+const getDashboardSummary = async (req, res) => {
   try {
-    // Total campaigns
-    const totalCampaigns = await Campaign.countDocuments();
-    const activeCampaigns = await Campaign.countDocuments({ status: 'active' });
-    const completedCampaigns = await Campaign.countDocuments({ status: 'completed' });
+    // Get campaign statistics
+    const campaignStats = await Campaign.getStatistics();
 
-    // Total donations
-    const totalDonations = await Donor.countDocuments();
-    
-    // Total amount collected
-    const totalAmountResult = await Donor.aggregate([
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const totalAmount = totalAmountResult[0]?.total || 0;
+    // Get donation statistics
+    const donorStats = await Donor.getStatistics();
 
-    // Amount by campaign
-    const campaignSummary = await Campaign.aggregate([
-      {
-        $match: { status: { $in: ['active', 'completed'] } }
-      },
-      {
-        $project: {
-          title: 1,
-          category: 1,
-          goal: 1,
-          collected: 1,
-          donorCount: 1,
-          status: 1,
-          progressPercentage: {
-            $min: [
-              { $multiply: [{ $divide: ['$collected', '$goal'] }, 100] },
-              100
-            ]
-          }
-        }
-      },
-      { $sort: { collected: -1 } },
-      { $limit: 10 }
-    ]);
+    // Get pending campaigns
+    const pendingCampaigns = await Campaign.countDocuments({ status: 'pending' });
 
-    // Recent donations
-    const recentDonations = await Donor.find()
+    // Get recent donations
+    const recentDonations = await Donor.find({ paymentStatus: 'completed' })
+      .populate('campaignId', 'title')
       .sort({ date: -1 })
       .limit(10)
-      .populate('campaignId', 'title category');
+      .select('name email amount campaignId date');
 
-    // Donations by category
-    const categoryBreakdown = await Campaign.aggregate([
-      { $match: { status: { $in: ['active', 'completed'] } } },
+    // Get top campaigns by funds raised
+    const topCampaigns = await Campaign.find({ status: 'active' })
+      .sort({ collected: -1 })
+      .limit(5)
+      .select('title category goal collected donorCount');
+
+    // Calculate daily stats (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const dailyDonations = await Donor.aggregate([
       {
-        $group: {
-          _id: '$category',
-          totalCollected: { $sum: '$collected' },
-          campaignCount: { $sum: 1 }
+        $match: {
+          date: { $gte: thirtyDaysAgo },
+          paymentStatus: 'completed'
         }
       },
-      { $sort: { totalCollected: -1 } }
-    ]);
-
-    // Monthly donation trend (last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const monthlyTrend = await Donor.aggregate([
-      { $match: { date: { $gte: sixMonthsAgo } } },
       {
         $group: {
           _id: {
-            year: { $year: '$date' },
-            month: { $month: '$date' }
+            $dateToString: { format: '%Y-%m-%d', date: '$date' }
           },
-          totalAmount: { $sum: '$amount' },
-          count: { $sum: 1 }
+          count: { $sum: 1 },
+          amount: { $sum: '$amount' }
         }
       },
-      { $sort: { '_id.year': 1, '_id.month': 1 } }
+      {
+        $sort: { _id: 1 }
+      }
     ]);
 
     res.status(200).json({
       success: true,
       data: {
         overview: {
-          totalCampaigns,
-          activeCampaigns,
-          completedCampaigns,
-          totalDonations,
-          totalAmount
+          totalCampaigns: campaignStats.totalCampaigns,
+          activeCampaigns: campaignStats.activeCampaigns,
+          completedCampaigns: campaignStats.completedCampaigns,
+          pendingCampaigns,
+          totalDonations: donorStats.totalDonations,
+          totalDonors: donorStats.totalDonors,
+          totalFundsRaised: donorStats.totalAmount,
+          averageDonation: donorStats.averageAmount
         },
-        campaignSummary,
         recentDonations,
-        categoryBreakdown,
-        monthlyTrend
+        topCampaigns,
+        dailyStats: dailyDonations
       }
     });
 
   } catch (error) {
-    console.error('Error fetching summary:', error);
+    console.error('Get dashboard summary error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching admin summary',
+      message: 'Error fetching dashboard summary',
       error: error.message
     });
   }
@@ -193,47 +159,56 @@ const getAdminSummary = async (req, res) => {
 
 // @desc    Get all donors (admin view)
 // @route   GET /api/admin/donors
-// @access  Private (Admin)
-const getAllDonorsAdmin = async (req, res) => {
+// @access  Admin
+const getAllDonors = async (req, res) => {
   try {
-    const { page, limit, search, campaignId } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      campaignId,
+      status = 'completed'
+    } = req.query;
 
-    const filter = {};
-    
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
+    const query = {};
+
+    if (status && status !== 'all') {
+      query.paymentStatus = status;
     }
 
     if (campaignId) {
-      filter.campaignId = campaignId;
+      query.campaignId = campaignId;
     }
 
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-    const skip = (pageNum - 1) * limitNum;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } }
+      ];
+    }
 
-    const donors = await Donor.find(filter)
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const donors = await Donor.find(query)
+      .populate('campaignId', 'title category')
       .sort({ date: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .populate('campaignId', 'title category');
+      .limit(parseInt(limit))
+      .skip(skip);
 
-    const total = await Donor.countDocuments(filter);
+    const total = await Donor.countDocuments(query);
 
     res.status(200).json({
       success: true,
       count: donors.length,
       total,
-      page: pageNum,
-      pages: Math.ceil(total / limitNum),
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
       data: donors
     });
 
   } catch (error) {
-    console.error('Error fetching donors:', error);
+    console.error('Get all donors error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching donors',
@@ -244,43 +219,56 @@ const getAllDonorsAdmin = async (req, res) => {
 
 // @desc    Get all campaigns (admin view)
 // @route   GET /api/admin/campaigns
-// @access  Private (Admin)
-const getAllCampaignsAdmin = async (req, res) => {
+// @access  Admin
+const getAllCampaigns = async (req, res) => {
   try {
-    const { page, limit, status, category } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      category,
+      search
+    } = req.query;
 
-    const filter = {};
-    
-    if (status) {
-      filter.status = status;
+    const query = {};
+
+    if (status && status !== 'all') {
+      query.status = status;
     }
 
-    if (category) {
-      filter.category = category;
+    if (category && category !== 'all') {
+      query.category = category;
     }
 
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-    const skip = (pageNum - 1) * limitNum;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { creatorName: { $regex: search, $options: 'i' } },
+        { creatorEmail: { $regex: search, $options: 'i' } }
+      ];
+    }
 
-    const campaigns = await Campaign.find(filter)
-      .sort({ startDate: -1 })
-      .skip(skip)
-      .limit(limitNum);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const total = await Campaign.countDocuments(filter);
+    const campaigns = await Campaign.find(query)
+      .populate('approvedBy', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const total = await Campaign.countDocuments(query);
 
     res.status(200).json({
       success: true,
       count: campaigns.length,
       total,
-      page: pageNum,
-      pages: Math.ceil(total / limitNum),
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
       data: campaigns
     });
 
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
+    console.error('Get all campaigns error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching campaigns',
@@ -289,18 +277,89 @@ const getAllCampaignsAdmin = async (req, res) => {
   }
 };
 
-// @desc    Create default admin account (run once)
+// @desc    Approve campaign
+// @route   PUT /api/admin/campaigns/:id/approve
+// @access  Admin
+const approveCampaign = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign not found'
+      });
+    }
+
+    campaign.status = 'active';
+    campaign.approvedBy = req.admin._id;
+    campaign.approvedAt = new Date();
+    await campaign.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Campaign approved successfully',
+      data: campaign
+    });
+
+  } catch (error) {
+    console.error('Approve campaign error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error approving campaign',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Reject campaign
+// @route   PUT /api/admin/campaigns/:id/reject
+// @access  Admin
+const rejectCampaign = async (req, res) => {
+  try {
+    const { reason } = req.body;
+
+    const campaign = await Campaign.findById(req.params.id);
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign not found'
+      });
+    }
+
+    campaign.status = 'rejected';
+    campaign.rejectionReason = reason || 'Campaign does not meet our guidelines';
+    await campaign.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Campaign rejected',
+      data: campaign
+    });
+
+  } catch (error) {
+    console.error('Reject campaign error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error rejecting campaign',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Create default admin (for initial setup)
 // @route   POST /api/admin/create-default
 // @access  Public (should be disabled in production)
 const createDefaultAdmin = async (req, res) => {
   try {
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email: 'admin@donation.com' });
+    // Check if any admin exists
+    const adminExists = await Admin.findOne({});
 
-    if (existingAdmin) {
+    if (adminExists) {
       return res.status(400).json({
         success: false,
-        message: 'Default admin already exists'
+        message: 'Admin already exists. Use the login endpoint.'
       });
     }
 
@@ -308,7 +367,7 @@ const createDefaultAdmin = async (req, res) => {
     const admin = await Admin.create({
       email: 'admin@donation.com',
       password: 'admin123',
-      name: 'Super Administrator',
+      name: 'Platform Admin',
       role: 'superadmin'
     });
 
@@ -318,15 +377,37 @@ const createDefaultAdmin = async (req, res) => {
       data: {
         email: admin.email,
         name: admin.name,
-        note: 'Please change the default password immediately'
+        role: admin.role
       }
     });
 
   } catch (error) {
-    console.error('Error creating admin:', error);
+    console.error('Create default admin error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error creating admin',
+      message: 'Error creating default admin',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get admin profile
+// @route   GET /api/admin/profile
+// @access  Admin
+const getAdminProfile = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.admin._id).select('-password');
+
+    res.status(200).json({
+      success: true,
+      data: admin
+    });
+
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching profile',
       error: error.message
     });
   }
@@ -334,8 +415,11 @@ const createDefaultAdmin = async (req, res) => {
 
 module.exports = {
   adminLogin,
-  getAdminSummary,
-  getAllDonorsAdmin,
-  getAllCampaignsAdmin,
-  createDefaultAdmin
+  getDashboardSummary,
+  getAllDonors,
+  getAllCampaigns,
+  approveCampaign,
+  rejectCampaign,
+  createDefaultAdmin,
+  getAdminProfile
 };

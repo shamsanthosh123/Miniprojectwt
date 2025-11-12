@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { LogIn } from "lucide-react";
+import { adminAPI } from "../utils/api";
+import { toast } from "sonner@2.0.3";
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -15,14 +17,25 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const response = await adminAPI.login({ email, password });
+      
+      if (response.success) {
+        toast.success('Login successful! Welcome back.');
+        onClose();
+        // Reload to update header state
+        window.location.reload();
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Invalid email or password');
+    } finally {
       setIsLoading(false);
-      alert("Successfully signed in!");
-      onClose();
-    }, 1500);
+    }
   };
 
   return (

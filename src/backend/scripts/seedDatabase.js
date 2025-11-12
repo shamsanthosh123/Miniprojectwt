@@ -1,217 +1,189 @@
-/**
- * Script to seed the database with sample data
- * Run this to populate database with test campaigns and donations
- * 
- * Usage: node scripts/seedDatabase.js
- */
-
+require('dotenv').config();
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const Campaign = require('../models/Campaign');
 const Donor = require('../models/Donor');
-const Admin = require('../models/Admin');
-
-// Load environment variables
-dotenv.config();
+const connectDB = require('../config/db');
 
 const sampleCampaigns = [
   {
-    title: "Help Build School for Underprivileged Children",
-    description: "We are raising funds to build a school in a rural area where children have to walk 10km daily for education. Your contribution will help provide quality education to 500+ children.",
-    category: "Education",
-    goal: 500000,
-    collected: 350000,
+    title: 'Education for Underprivileged Children',
+    description: 'Help provide quality education, books, and supplies to children in rural communities who lack access to proper schooling. Your contribution will help build libraries, provide textbooks, and support teacher training programs.',
+    category: 'schools',
+    goal: 6250000,
+    duration: 60,
+    creatorName: 'Education Foundation India',
+    creatorEmail: 'contact@educationfoundation.org',
+    status: 'active',
+    isUrgent: false,
+    isFeatured: true
+  },
+  {
+    title: 'Clean Water Initiative',
+    description: 'Build wells and water purification systems in communities without access to safe drinking water. Every donation helps bring clean water to families in need.',
+    category: 'health',
+    goal: 8330000,
+    duration: 90,
+    creatorName: 'Water for All NGO',
+    creatorEmail: 'info@waterforall.org',
+    status: 'active',
+    isUrgent: true,
+    isFeatured: true
+  },
+  {
+    title: 'Medical Equipment for Rural Clinics',
+    description: 'Provide essential medical equipment and supplies to healthcare facilities serving remote communities. Help save lives by ensuring clinics have the tools they need.',
+    category: 'health',
+    goal: 4165000,
     duration: 45,
-    status: "active",
-    creatorName: "Education Foundation",
-    creatorEmail: "contact@edufoundation.org",
-    donorCount: 245,
-    isUrgent: false,
-    isVerified: true
-  },
-  {
-    title: "Emergency Medical Fund for Cancer Patients",
-    description: "Support cancer patients who cannot afford treatment. Every contribution helps save lives and provides hope to families in need.",
-    category: "Health",
-    goal: 1000000,
-    collected: 650000,
-    duration: 60,
-    status: "active",
-    creatorName: "Healthcare Trust",
-    creatorEmail: "help@healthtrust.org",
-    donorCount: 423,
+    creatorName: 'Rural Health Initiative',
+    creatorEmail: 'support@ruralhealthindia.org',
+    status: 'active',
     isUrgent: true,
-    isVerified: true
+    isFeatured: false
   },
   {
-    title: "Clean Water Initiative for Remote Villages",
-    description: "Bringing clean drinking water to 15 villages that currently lack access to safe water. Help us install water purification systems.",
-    category: "Environment",
-    goal: 750000,
-    collected: 580000,
+    title: 'School Infrastructure Development',
+    description: 'Build new classrooms and improve school facilities for children in underserved areas. Help create a better learning environment for the next generation.',
+    category: 'schools',
+    goal: 5000000,
+    duration: 120,
+    creatorName: 'Build Schools Foundation',
+    creatorEmail: 'hello@buildschools.org',
+    status: 'active',
+    isUrgent: false,
+    isFeatured: false
+  },
+  {
+    title: 'Children\'s Nutrition Program',
+    description: 'Provide nutritious meals to malnourished children in urban slums and rural areas. Your support ensures children get the nutrition they need to grow and thrive.',
+    category: 'children',
+    goal: 7083000,
+    duration: 75,
+    creatorName: 'Nutrition First',
+    creatorEmail: 'care@nutritionfirst.org',
+    status: 'active',
+    isUrgent: false,
+    isFeatured: true
+  },
+  {
+    title: 'Children\'s Hospital Emergency Fund',
+    description: 'Support critical medical care for children with life-threatening conditions. Every contribution helps save a child\'s life.',
+    category: 'children',
+    goal: 10000000,
     duration: 30,
-    status: "active",
-    creatorName: "Clean Water Foundation",
-    creatorEmail: "info@cleanwater.org",
-    donorCount: 312,
-    isUrgent: false,
-    isVerified: true
-  },
-  {
-    title: "Food Distribution for Homeless Families",
-    description: "Daily meal program for 200 homeless families. Your donation provides nutritious meals and brings smiles to hungry children.",
-    category: "Food & Nutrition",
-    goal: 300000,
-    collected: 275000,
-    duration: 40,
-    status: "active",
-    creatorName: "Food Bank Initiative",
-    creatorEmail: "support@foodbank.org",
-    donorCount: 189,
+    creatorName: 'Children\'s Medical Trust',
+    creatorEmail: 'emergencies@childmedicaltrust.org',
+    status: 'active',
     isUrgent: true,
-    isVerified: true
+    isFeatured: true
   },
   {
-    title: "Animal Shelter and Rescue Center",
-    description: "Building a shelter for abandoned and injured animals. We rescue, treat, and find loving homes for stray animals.",
-    category: "Animals",
-    goal: 400000,
-    collected: 125000,
-    duration: 50,
-    status: "active",
-    creatorName: "Animal Welfare Society",
-    creatorEmail: "rescue@animalwelfare.org",
-    donorCount: 87,
-    isUrgent: false,
-    isVerified: true
-  },
-  {
-    title: "Community Center for Senior Citizens",
-    description: "Creating a safe space for elderly people to socialize, get healthcare, and participate in activities. Help us care for our seniors.",
-    category: "Community",
-    goal: 600000,
-    collected: 425000,
-    duration: 35,
-    status: "active",
-    creatorName: "Senior Care Foundation",
-    creatorEmail: "hello@seniorcare.org",
-    donorCount: 201,
-    isUrgent: false,
-    isVerified: true
-  },
-  {
-    title: "Disaster Relief Fund - Flood Victims",
-    description: "Immediate relief for families affected by recent floods. Providing food, shelter, and essential supplies to 1000+ families.",
-    category: "Other",
-    goal: 800000,
-    collected: 720000,
-    duration: 20,
-    status: "active",
-    creatorName: "Disaster Relief Team",
-    creatorEmail: "emergency@relief.org",
-    donorCount: 567,
-    isUrgent: true,
-    isVerified: true
-  },
-  {
-    title: "Women Empowerment Through Skill Training",
-    description: "Vocational training for underprivileged women to become financially independent. Courses in tailoring, handicrafts, and digital skills.",
-    category: "Education",
-    goal: 450000,
-    collected: 225000,
+    title: 'Disaster Relief Fund',
+    description: 'Provide immediate relief to families affected by natural disasters. Your donation helps with food, shelter, and medical assistance.',
+    category: 'other',
+    goal: 5000000,
     duration: 60,
-    status: "active",
-    creatorName: "Women Empowerment NGO",
-    creatorEmail: "contact@womenpower.org",
-    donorCount: 156,
+    creatorName: 'Disaster Response Team',
+    creatorEmail: 'help@disasterresponse.org',
+    status: 'active',
+    isUrgent: true,
+    isFeatured: false
+  },
+  {
+    title: 'Digital Literacy for Rural Students',
+    description: 'Bring technology and digital education to rural schools. Help bridge the digital divide and prepare students for the future.',
+    category: 'schools',
+    goal: 3500000,
+    duration: 90,
+    creatorName: 'Digital Education Initiative',
+    creatorEmail: 'info@digitaleducation.org',
+    status: 'active',
     isUrgent: false,
-    isVerified: true
+    isFeatured: false
   }
+];
+
+const sampleDonors = [
+  { name: 'Rajesh Kumar', email: 'rajesh.k@email.com', phone: '+91 9876543210', amount: 5000 },
+  { name: 'Priya Sharma', email: 'priya.s@email.com', phone: '+91 9876543211', amount: 2500 },
+  { name: 'Amit Patel', email: 'amit.p@email.com', phone: '+91 9876543212', amount: 10000 },
+  { name: 'Sneha Reddy', email: 'sneha.r@email.com', phone: '+91 9876543213', amount: 1000 },
+  { name: 'Vikram Singh', email: 'vikram.s@email.com', phone: '+91 9876543214', amount: 7500 },
+  { name: 'Ananya Desai', email: 'ananya.d@email.com', phone: '+91 9876543215', amount: 3000 },
+  { name: 'Karthik Menon', email: 'karthik.m@email.com', phone: '+91 9876543216', amount: 15000 },
+  { name: 'Divya Iyer', email: 'divya.i@email.com', phone: '+91 9876543217', amount: 5000 },
+  { name: 'Rahul Verma', email: 'rahul.v@email.com', phone: '+91 9876543218', amount: 2000 },
+  { name: 'Pooja Gupta', email: 'pooja.g@email.com', phone: '+91 9876543219', amount: 8000 }
 ];
 
 const seedDatabase = async () => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Connect to database
+    await connectDB();
 
-    console.log('✅ Connected to MongoDB\n');
+    console.log('\n' + '='.repeat(50));
+    console.log('🌱 Database Seeding Started');
+    console.log('='.repeat(50) + '\n');
 
-    // Clear existing data
-    console.log('🗑️  Clearing existing data...');
+    // Clear existing data (optional - comment out if you want to keep existing data)
+    console.log('🗑️  Clearing existing campaigns and donations...');
     await Campaign.deleteMany({});
     await Donor.deleteMany({});
     console.log('✅ Existing data cleared\n');
 
-    // Insert sample campaigns
-    console.log('📝 Inserting sample campaigns...');
+    // Insert campaigns
+    console.log('📝 Creating sample campaigns...');
     const campaigns = await Campaign.insertMany(sampleCampaigns);
-    console.log(`✅ ${campaigns.length} campaigns created\n`);
+    console.log(`✅ Created ${campaigns.length} campaigns\n`);
 
-    // Create sample donations for each campaign
+    // Insert donors for each campaign
     console.log('💰 Creating sample donations...');
     let totalDonations = 0;
 
     for (const campaign of campaigns) {
-      const donationCount = Math.floor(Math.random() * 10) + 5; // 5-15 donations per campaign
+      // Add 3-8 random donations per campaign
+      const donationCount = Math.floor(Math.random() * 6) + 3;
       
       for (let i = 0; i < donationCount; i++) {
+        const randomDonor = sampleDonors[Math.floor(Math.random() * sampleDonors.length)];
+        const randomAmount = [500, 1000, 2000, 2500, 5000, 10000][Math.floor(Math.random() * 6)];
+        
         await Donor.create({
-          name: `Donor ${Math.floor(Math.random() * 1000)}`,
-          email: `donor${Math.floor(Math.random() * 10000)}@example.com`,
-          phone: `${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-          amount: [500, 1000, 2000, 5000, 10000][Math.floor(Math.random() * 5)],
+          ...randomDonor,
+          amount: randomAmount,
           campaignId: campaign._id,
-          campaignTitle: campaign.title,
-          message: 'Happy to contribute to this cause!',
-          displayPublicly: Math.random() > 0.3,
-          paymentStatus: 'completed',
-          date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Random date in last 30 days
+          message: 'Great initiative! Happy to contribute.',
+          displayPublicly: Math.random() > 0.3, // 70% display publicly
+          paymentStatus: 'completed'
         });
+        
         totalDonations++;
       }
     }
 
-    console.log(`✅ ${totalDonations} donations created\n`);
-
-    // Create admin if doesn't exist
-    const existingAdmin = await Admin.findOne({ email: 'admin@donation.com' });
-    if (!existingAdmin) {
-      console.log('👤 Creating default admin...');
-      await Admin.create({
-        email: 'admin@donation.com',
-        password: 'admin123',
-        name: 'Super Administrator',
-        role: 'superadmin',
-        isActive: true
-      });
-      console.log('✅ Admin created\n');
-    } else {
-      console.log('ℹ️  Admin already exists\n');
-    }
+    console.log(`✅ Created ${totalDonations} donations\n`);
 
     // Display summary
-    console.log('📊 Database Seeding Summary:');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(`✅ Campaigns: ${campaigns.length}`);
-    console.log(`✅ Donations: ${totalDonations}`);
-    console.log(`✅ Admin: 1`);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    const stats = await Campaign.getStatistics();
+    const donorStats = await Donor.getStatistics();
 
-    console.log('🎉 Database seeded successfully!\n');
-    console.log('Admin Credentials:');
-    console.log('📧 Email: admin@donation.com');
-    console.log('🔑 Password: admin123\n');
+    console.log('📊 Database Summary:');
+    console.log('   📋 Total Campaigns:', stats.totalCampaigns);
+    console.log('   ✅ Active Campaigns:', stats.activeCampaigns);
+    console.log('   💰 Total Donations:', donorStats.totalDonations);
+    console.log('   👥 Unique Donors:', donorStats.totalDonors);
+    console.log('   💵 Total Raised: ₹' + donorStats.totalAmount.toLocaleString('en-IN'));
+    console.log('\n' + '='.repeat(50));
+    console.log('✨ Database seeding completed successfully!');
+    console.log('='.repeat(50) + '\n');
 
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Error seeding database:', error.message);
+    console.error('\n❌ Error seeding database:', error.message);
+    console.error(error);
     process.exit(1);
   }
 };
 
-// Run the script
 seedDatabase();

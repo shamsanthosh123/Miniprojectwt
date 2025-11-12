@@ -1,54 +1,58 @@
 const Campaign = require('../models/Campaign');
+const Donor = require('../models/Donor');
+const { validationResult } = require('express-validator');
 
 // @desc    Create new campaign
 // @route   POST /api/campaigns
 // @access  Public
 const createCampaign = async (req, res) => {
   try {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
     const {
       title,
       description,
       category,
       goal,
       duration,
-      image,
-      documents,
       creatorName,
       creatorEmail,
+      image,
+      documents,
       isUrgent
     } = req.body;
-
-    // Validate required fields
-    if (!title || !description || !category || !goal || !duration) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields'
-      });
-    }
 
     // Create campaign
     const campaign = await Campaign.create({
       title,
       description,
-      category,
-      goal: Number(goal),
-      duration: Number(duration),
-      image: image || '',
+      category: category.toLowerCase(),
+      goal,
+      duration,
+      creatorName,
+      creatorEmail,
+      image: image || null,
       documents: documents || [],
-      creatorName: creatorName || 'Anonymous',
-      creatorEmail: creatorEmail || '',
       isUrgent: isUrgent || false,
-      status: 'active'
+      status: 'pending' // All campaigns start as pending for review
     });
 
     res.status(201).json({
       success: true,
-      message: 'Campaign created successfully',
+      message: 'Campaign created successfully and is pending review',
       data: campaign
     });
 
   } catch (error) {
-    console.error('Error creating campaign:', error);
+    console.error('Create campaign error:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating campaign',
@@ -62,63 +66,71 @@ const createCampaign = async (req, res) => {
 // @access  Public
 const getAllCampaigns = async (req, res) => {
   try {
-    const { category, status, search, limit, page, sortBy } = req.query;
+    const {
+      category,
+      status = 'active',
+      search,
+      limit = 20,
+      page = 1,
+      sortBy = 'createdAt'
+    } = req.query;
 
-    const filter = {};
+    const query = {};
 
     // Filter by category
-    if (category && category !== 'All Campaigns') {
-      filter.category = category;
+    if (category && category !== 'all') {
+      query.category = category.toLowerCase();
     }
 
     // Filter by status
-    if (status) {
-      filter.status = status;
-    } else {
-      // By default, show only active campaigns
-      filter.status = 'active';
+    if (status && status !== 'all') {
+      query.status = status;
     }
 
-    // Search filter
+    // Search by title or description
     if (search) {
-      filter.$or = [
+      query.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } }
       ];
     }
 
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-    const skip = (pageNum - 1) * limitNum;
-
-    // Sorting
-    let sort = { startDate: -1 }; // Default: newest first
-    if (sortBy === 'urgent') {
-      sort = { isUrgent: -1, startDate: -1 };
-    } else if (sortBy === 'popular') {
-      sort = { donorCount: -1 };
-    } else if (sortBy === 'goal') {
-      sort = { goal: -1 };
+    // Ensure only active campaigns are shown to public (unless status is specified)
+    if (!req.admin && status === 'active') {
+      query.endDate = { $gt: new Date() };
     }
 
-    const campaigns = await Campaign.find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limitNum);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const total = await Campaign.countDocuments(filter);
+    // Sort options
+    const sortOptions = {
+      createdAt: { createdAt: -1 },
+      recent: { createdAt: -1 },
+      goal: { goal: -1 },
+      collected: { collected: -1 },
+      ending: { endDate: 1 }
+    };
+
+    const sort = sortOptions[sortBy] || sortOptions.createdAt;
+
+    const campaigns = await Campaign.find(query)
+      .sort(sort)
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const total = await Campaign.countDocuments(query);
 
     res.status(200).json({
       success: true,
       count: campaigns.length,
       total,
-      page: pageNum,
-      pages: Math.ceil(total / limitNum),
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
       data: campaigns
     });
 
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
+    console.error('Get campaigns error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching campaigns',
@@ -141,13 +153,19 @@ const getCampaignById = async (req, res) => {
       });
     }
 
+    // Get recent donors for this campaign
+    const recentDonors = await Donor.getByCampaign(campaign._id, 10);
+
     res.status(200).json({
       success: true,
-      data: campaign
+      data: {
+        ...campaign.toObject(),
+        recentDonors
+      }
     });
 
   } catch (error) {
-    console.error('Error fetching campaign:', error);
+    console.error('Get campaign error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching campaign',
@@ -170,15 +188,15 @@ const updateCampaign = async (req, res) => {
       });
     }
 
+    // Update allowed fields
     const allowedUpdates = [
       'title',
       'description',
       'goal',
-      'image',
-      'documents',
       'status',
       'isUrgent',
-      'duration'
+      'isFeatured',
+      'rejectionReason'
     ];
 
     allowedUpdates.forEach(field => {
@@ -186,6 +204,12 @@ const updateCampaign = async (req, res) => {
         campaign[field] = req.body[field];
       }
     });
+
+    // If status is being changed to active, record approval
+    if (req.body.status === 'active' && campaign.status !== 'active') {
+      campaign.approvedBy = req.admin._id;
+      campaign.approvedAt = new Date();
+    }
 
     await campaign.save();
 
@@ -196,7 +220,7 @@ const updateCampaign = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error updating campaign:', error);
+    console.error('Update campaign error:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating campaign',
@@ -219,6 +243,19 @@ const deleteCampaign = async (req, res) => {
       });
     }
 
+    // Check if campaign has donations
+    const donationCount = await Donor.countDocuments({ 
+      campaignId: campaign._id,
+      paymentStatus: 'completed'
+    });
+
+    if (donationCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete campaign with existing donations. Please cancel it instead.'
+      });
+    }
+
     await campaign.deleteOne();
 
     res.status(200).json({
@@ -227,7 +264,7 @@ const deleteCampaign = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error deleting campaign:', error);
+    console.error('Delete campaign error:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting campaign',
@@ -241,38 +278,95 @@ const deleteCampaign = async (req, res) => {
 // @access  Public
 const getCampaignStats = async (req, res) => {
   try {
-    const totalCampaigns = await Campaign.countDocuments({ status: 'active' });
-    
-    const totalRaised = await Campaign.aggregate([
-      { $match: { status: 'active' } },
-      { $group: { _id: null, total: { $sum: '$collected' } } }
-    ]);
+    const stats = await Campaign.getStatistics();
 
-    const categoryCounts = await Campaign.aggregate([
-      { $match: { status: 'active' } },
-      { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
+    // Get category breakdown
+    const categoryStats = await Campaign.aggregate([
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          totalGoal: { $sum: '$goal' },
+          totalCollected: { $sum: '$collected' }
+        }
+      }
     ]);
-
-    const urgentCampaigns = await Campaign.find({ isUrgent: true, status: 'active' })
-      .sort({ startDate: -1 })
-      .limit(5);
 
     res.status(200).json({
       success: true,
       data: {
-        totalCampaigns,
-        totalRaised: totalRaised[0]?.total || 0,
-        categoryCounts,
-        urgentCampaigns
+        ...stats,
+        categoryBreakdown: categoryStats
       }
     });
 
   } catch (error) {
-    console.error('Error fetching stats:', error);
+    console.error('Get campaign stats error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching statistics',
+      message: 'Error fetching campaign statistics',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get featured campaigns
+// @route   GET /api/campaigns/featured
+// @access  Public
+const getFeaturedCampaigns = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    const campaigns = await Campaign.find({
+      status: 'active',
+      isFeatured: true,
+      endDate: { $gt: new Date() }
+    })
+    .sort({ createdAt: -1 })
+    .limit(parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      count: campaigns.length,
+      data: campaigns
+    });
+
+  } catch (error) {
+    console.error('Get featured campaigns error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching featured campaigns',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get urgent campaigns
+// @route   GET /api/campaigns/urgent
+// @access  Public
+const getUrgentCampaigns = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    const campaigns = await Campaign.find({
+      status: 'active',
+      isUrgent: true,
+      endDate: { $gt: new Date() }
+    })
+    .sort({ endDate: 1 }) // Sort by ending soon
+    .limit(parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      count: campaigns.length,
+      data: campaigns
+    });
+
+  } catch (error) {
+    console.error('Get urgent campaigns error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching urgent campaigns',
       error: error.message
     });
   }
@@ -284,5 +378,7 @@ module.exports = {
   getCampaignById,
   updateCampaign,
   deleteCampaign,
-  getCampaignStats
+  getCampaignStats,
+  getFeaturedCampaigns,
+  getUrgentCampaigns
 };

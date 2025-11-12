@@ -10,10 +10,12 @@ import { StartDonating } from "./pages/StartDonating";
 import { CreateCampaign } from "./pages/CreateCampaign";
 import { FAQPage } from "./pages/FAQPage";
 import { VisualDocumentation } from "./pages/VisualDocumentation";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { BackendStatus } from "./components/BackendStatus";
 import { ArrowLeft, FileText } from "lucide-react";
 import { Toaster } from "sonner@2.0.3";
 
-type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq" | "visual-docs";
+type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq" | "visual-docs" | "admin-dashboard";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("home");
@@ -55,6 +57,8 @@ export default function App() {
         return <FAQPage />;
       case "visual-docs":
         return <VisualDocumentation onNavigate={handleNavigate} />;
+      case "admin-dashboard":
+        return <AdminDashboard onNavigate={handleNavigate} />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }
@@ -112,6 +116,9 @@ export default function App() {
 
       {/* Toast Notifications */}
       <Toaster position="top-right" richColors closeButton />
+
+      {/* Backend Connection Status */}
+      <BackendStatus />
     </div>
   );
 }
