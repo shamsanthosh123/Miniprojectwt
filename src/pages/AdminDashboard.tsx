@@ -14,7 +14,9 @@ import {
   RefreshCw,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Package,
+  ArrowRight
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Input } from '../components/ui/input';
@@ -202,8 +204,20 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (page: string) => 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage and view all donor information</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="mb-2">Admin Dashboard</h1>
+              <p className="text-gray-600">Manage and view all donor information</p>
+            </div>
+            <Button
+              onClick={() => onNavigate?.('campaign-tracking')}
+              className="bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] text-white hover:shadow-lg transition-all"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Campaign Tracking
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

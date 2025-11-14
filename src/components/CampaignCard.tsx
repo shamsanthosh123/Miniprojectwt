@@ -1,4 +1,5 @@
 import { Calendar, Users } from "lucide-react";
+import { memo } from "react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface CampaignCardProps {
@@ -14,7 +15,7 @@ interface CampaignCardProps {
   onDonate: (id: string) => void;
 }
 
-export function CampaignCard({
+export const CampaignCard = memo(function CampaignCard({
   id,
   title,
   description,
@@ -90,4 +91,4 @@ export function CampaignCard({
       </div>
     </div>
   );
-}
+});

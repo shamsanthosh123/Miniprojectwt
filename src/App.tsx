@@ -11,11 +11,12 @@ import { CreateCampaign } from "./pages/CreateCampaign";
 import { FAQPage } from "./pages/FAQPage";
 import { VisualDocumentation } from "./pages/VisualDocumentation";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { CampaignTracking } from "./pages/CampaignTracking";
 import { BackendStatus } from "./components/BackendStatus";
 import { ArrowLeft, FileText } from "lucide-react";
 import { Toaster } from "sonner@2.0.3";
 
-type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq" | "visual-docs" | "admin-dashboard";
+type PageType = "home" | "explore" | "how-it-works" | "start-donating" | "create-campaign" | "faq" | "visual-docs" | "admin-dashboard" | "campaign-tracking";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("home");
@@ -59,6 +60,8 @@ export default function App() {
         return <VisualDocumentation onNavigate={handleNavigate} />;
       case "admin-dashboard":
         return <AdminDashboard onNavigate={handleNavigate} />;
+      case "campaign-tracking":
+        return <CampaignTracking onNavigate={handleNavigate} />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }

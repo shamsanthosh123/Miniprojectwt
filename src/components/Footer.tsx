@@ -1,10 +1,11 @@
 import { Heart, Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { memo } from "react";
 
 interface FooterProps {
   onNavigate?: (page: string) => void;
 }
 
-export function Footer({ onNavigate }: FooterProps = {}) {
+export const Footer = memo(function Footer({ onNavigate }: FooterProps = {}) {
   return (
     <footer className="bg-gradient-to-b from-[#B2EBF2] to-[#80DEEA] border-t border-[#00BCD4]/20 mt-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
@@ -109,7 +110,7 @@ export function Footer({ onNavigate }: FooterProps = {}) {
       </div>
     </footer>
   );
-}
+});
 
 function SocialIcon({ Icon }: { Icon: any }) {
   return (

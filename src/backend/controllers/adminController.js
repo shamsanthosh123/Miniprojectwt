@@ -413,6 +413,50 @@ const getAdminProfile = async (req, res) => {
   }
 };
 
+// @desc    Get campaign with donor details
+// @route   GET /api/admin/campaigns/:id/donors
+// @access  Admin
+const getCampaignDonors = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign not found'
+      });
+    }
+
+    // Get all donors for this campaign
+    const donors = await Donor.find({ campaignId: req.params.id })
+      .sort({ date: -1 })
+      .select('name email phone amount message paymentStatus transactionId date displayPublicly');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        campaign,
+        donors,
+        summary: {
+          totalDonors: donors.length,
+          completedDonations: donors.filter(d => d.paymentStatus === 'completed').length,
+          totalCollected: campaign.collected,
+          goalAmount: campaign.goal,
+          remainingAmount: campaign.goal - campaign.collected
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get campaign donors error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching campaign donors',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   adminLogin,
   getDashboardSummary,
@@ -421,5 +465,6 @@ module.exports = {
   approveCampaign,
   rejectCampaign,
   createDefaultAdmin,
-  getAdminProfile
+  getAdminProfile,
+  getCampaignDonors
 };

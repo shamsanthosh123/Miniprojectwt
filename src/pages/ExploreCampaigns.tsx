@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { CampaignCard } from "../components/CampaignCard";
 import { DonationModal } from "../components/DonationModal";
+import { CampaignCardSkeleton } from "../components/LoadingSkeleton";
 import { Search, Filter, GraduationCap, HeartPulse, CloudRain, Footprints, Users, Leaf, Home, Utensils, HelpingHand, Brain } from "lucide-react";
 import { campaignAPI } from "../utils/api";
 import { toast } from "sonner@2.0.3";
@@ -300,9 +301,10 @@ export function ExploreCampaigns({ onNavigate }: ExploreCampaignsProps = {}) {
 
           {/* Campaign Grid */}
           {isLoading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-[#00BCD4]"></div>
-              <p className="mt-4 text-gray-600">Loading campaigns...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <CampaignCardSkeleton key={i} />
+              ))}
             </div>
           ) : campaigns.length === 0 ? (
             <div className="text-center py-20">

@@ -266,6 +266,11 @@ export const adminAPI = {
     return api.get(`/admin/campaigns${query ? `?${query}` : ''}`);
   },
 
+  // Get campaign with donor details (admin view)
+  getCampaignDonors: async (campaignId: string) => {
+    return api.get(`/admin/campaigns/${campaignId}/donors`);
+  },
+
   // Create default admin (for initial setup only)
   createDefaultAdmin: async () => {
     return api.post('/admin/create-default', {});

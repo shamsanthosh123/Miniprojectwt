@@ -10,7 +10,8 @@ const {
   approveCampaign,
   rejectCampaign,
   createDefaultAdmin,
-  getAdminProfile
+  getAdminProfile,
+  getCampaignDonors
 } = require('../controllers/adminController');
 
 // Validation middleware
@@ -27,6 +28,7 @@ router.post('/create-default', createDefaultAdmin);
 router.get('/summary', protect, getDashboardSummary);
 router.get('/donors', protect, getAllDonors);
 router.get('/campaigns', protect, getAllCampaigns);
+router.get('/campaigns/:id/donors', protect, getCampaignDonors);
 router.get('/profile', protect, getAdminProfile);
 router.put('/campaigns/:id/approve', protect, approveCampaign);
 router.put('/campaigns/:id/reject', protect, rejectCampaign);

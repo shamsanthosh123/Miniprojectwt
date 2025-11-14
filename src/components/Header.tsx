@@ -1,5 +1,5 @@
 import { Heart, Menu, X, Shield, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { adminAPI } from "../utils/api";
 import { toast } from "sonner@2.0.3";
 
@@ -9,7 +9,7 @@ interface HeaderProps {
   onNavigate: (page: string) => void;
 }
 
-export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps) {
+export const Header = memo(function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -66,10 +66,16 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
             <>
               <button
                 onClick={() => onNavigate('admin-dashboard')}
-                className="flex items-center gap-2 px-5 py-2.5 text-[#00BCD4] hover:bg-[#E0F7FA] rounded-lg transition-colors font-medium"
+                className="flex items-center gap-2 px-4 py-2.5 text-[#00BCD4] hover:bg-[#E0F7FA] rounded-lg transition-colors font-medium"
               >
                 <Shield className="w-4 h-4" />
-                Admin Dashboard
+                Dashboard
+              </button>
+              <button
+                onClick={() => onNavigate('campaign-tracking')}
+                className="flex items-center gap-2 px-4 py-2.5 text-[#00BCD4] hover:bg-[#E0F7FA] rounded-lg transition-colors font-medium"
+              >
+                Campaigns
               </button>
               <button
                 onClick={handleLogout}
@@ -137,7 +143,13 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
                     className="flex items-center justify-center gap-2 btn-auth-secondary text-center"
                   >
                     <Shield className="w-4 h-4" />
-                    Admin Dashboard
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => { onNavigate('campaign-tracking'); setMobileMenuOpen(false); }}
+                    className="flex items-center justify-center gap-2 btn-auth-secondary text-center"
+                  >
+                    Campaigns
                   </button>
                   <button
                     onClick={handleLogout}
@@ -169,4 +181,4 @@ export function Header({ onSignInClick, onSignUpClick, onNavigate }: HeaderProps
       )}
     </header>
   );
-}
+});
